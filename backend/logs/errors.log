@@ -1,0 +1,105 @@
+2026-04-29 18:19:51,888 - __main__ - ERROR - Server startup failed: No module named 'ceo_orchestration_routes'
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
+    uvicorn.run(
+    ~~~~~~~~~~~^
+        "server:app",
+        ^^^^^^^^^^^^^
+    ...<4 lines>...
+        access_log=False,  # We handle our own access logging
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 24, in import_from_string
+    raise exc from None
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 18, in <module>
+    from ceo_orchestration_routes import ceo_router
+ModuleNotFoundError: No module named 'ceo_orchestration_routes'
+2026-04-29 18:59:37,823 - __main__ - ERROR - Server startup failed: name 'Dict' is not defined
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
+    uvicorn.run(
+    ~~~~~~~~~~~^
+        "server:app",
+        ^^^^^^^^^^^^^
+    ...<4 lines>...
+        access_log=False,  # We handle our own access logging
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 14, in <module>
+    from routes import api_router
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\routes.py", line 6, in <module>
+    from models import OrchestrateRequest, OrchestrateResponse, StepLog, AgentRun
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 104, in <module>
+    class CEOOrchestrationResponse(BaseModel):
+    ...<10 lines>...
+        metadata: Optional[dict] = None
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 114, in CEOOrchestrationResponse
+    learning_applied: Optional[Dict[str, Any]] = None
+                               ^^^^
+NameError: name 'Dict' is not defined. Did you mean: 'dict'?

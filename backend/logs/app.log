@@ -1,0 +1,546 @@
+2026-04-29 18:06:52,797 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:06:53,349 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:06:53,352 - ai_service - INFO - Content generated successfully, length: 335
+2026-04-29 18:11:31,310 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:11:32,129 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:11:32,135 - ai_service - INFO - Content generated successfully, length: 345
+2026-04-29 18:12:09,394 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:12:10,015 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:10,018 - ai_service - INFO - Content generated successfully, length: 325
+2026-04-29 18:12:10,057 - utils - INFO - Content Writer v2 Main Agent detected for request 793597cb-998e-4eb0-ae83-f4e0ac28bcac
+2026-04-29 18:12:10,122 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:12:11,303 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:12:11,307 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 18:12:11,731 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:11,736 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:12:12,133 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:12,136 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 18:12:12,138 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 18:12:13,406 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:13,767 - utils - INFO - Social Media Publisher Main Agent detected for request eaed77fd-8c31-4e99-bb63-be30b3b2fcc0
+2026-04-29 18:12:14,285 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:14,290 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:12:14,451 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:12:14,455 - social_media_publisher.sub_agents.instagram - INFO - Instagram API debug info: {'timestamp': 'nt.times_result(user=1.515625, system=1.3125, children_user=0.0, children_system=0.0, elapsed=0.0)', 'environment_variables': {'INSTAGRAM_ACCESS_TOKEN': 'EAAaaZBV...ZDZD', 'INSTAGRAM_USER_ID': '17841439653964722', 'INSTAGRAM_APP_ID': '1859245554779257', 'GROQ_API_KEY': 'gsk_mo5y...updU', 'SOCIAL_MEDIA_AI_MODEL': 'llama3-8b-8192'}, 'api_endpoints': {'media_creation': 'https://graph.facebook.com/v18.0/{user_id}/media', 'media_publish': 'https://graph.facebook.com/v18.0/{user_id}/media_publish', 'user_info': 'https://graph.facebook.com/v18.0/{user_id}'}, 'required_permissions': ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']}
+2026-04-29 18:12:14,458 - social_media_publisher.sub_agents.instagram - INFO - Instagram agent initialized successfully
+2026-04-29 18:12:14,459 - social_media_publisher.sub_agents.base - INFO - InstagramAgent initialized for instagram
+2026-04-29 18:12:14,460 - social_media_publisher.factory - INFO - Created new InstagramAgent for platform: instagram
+2026-04-29 18:12:14,462 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:12:14,463 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:12:14,464 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:12:14,465 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:12:14,466 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Publish the caption on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:12:19,432 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:12:19,433 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077319062321799"}
+2026-04-29 18:12:19,434 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077319062321799
+2026-04-29 18:12:24,430 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 18102217990952762
+2026-04-29 18:19:43,579 - server - INFO - Shutting down AI Startup System...
+2026-04-29 18:19:43,579 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 18:19:43,580 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 18:19:43,580 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 18:19:43,581 - ai_service - INFO - AI service cleanup completed
+2026-04-29 18:19:43,581 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 18:19:43,582 - server - INFO - AI providers cleanup completed
+2026-04-29 18:19:46,843 - root - INFO - Logging system initialized successfully
+2026-04-29 18:19:46,844 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:19:46,849 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 18:19:51,888 - __main__ - ERROR - Server startup failed: No module named 'ceo_orchestration_routes'
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
+    uvicorn.run(
+    ~~~~~~~~~~~^
+        "server:app",
+        ^^^^^^^^^^^^^
+    ...<4 lines>...
+        access_log=False,  # We handle our own access logging
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 24, in import_from_string
+    raise exc from None
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 18, in <module>
+    from ceo_orchestration_routes import ceo_router
+ModuleNotFoundError: No module named 'ceo_orchestration_routes'
+2026-04-29 18:23:04,716 - root - INFO - Logging system initialized successfully
+2026-04-29 18:23:04,718 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:23:04,722 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 18:23:09,122 - root - INFO - Logging system initialized successfully
+2026-04-29 18:23:09,123 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:23:09,182 - server - INFO - Starting AI Startup System...
+2026-04-29 18:23:09,183 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 18:23:10,140 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 18:23:10,142 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 18:23:10,143 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 18:23:10,144 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:23:10,601 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:23:10,601 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 18:23:10,602 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 18:23:10,602 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 18:23:11,037 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:23:11,037 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 18:23:11,038 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:23:11,038 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 18:23:11,039 - server - INFO - AI providers initialized successfully
+2026-04-29 18:23:32,688 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:23:33,355 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:33,360 - ai_service - INFO - Content generated successfully, length: 346
+2026-04-29 18:23:33,402 - utils - INFO - Content Writer v2 Main Agent detected for request 43ae9ec4-12ae-4bca-b351-a955d06e1c3b
+2026-04-29 18:23:33,483 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:23:34,660 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:23:34,661 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 18:23:35,012 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:35,016 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:23:35,465 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:35,466 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 18:23:35,466 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 18:23:37,513 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:37,853 - utils - INFO - Social Media Publisher Main Agent detected for request 26d78561-3cab-49c7-a6f3-6d6cb967e82f
+2026-04-29 18:23:38,183 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:38,184 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:23:38,421 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:23:38,423 - social_media_publisher.sub_agents.instagram - INFO - Instagram API debug info: {'timestamp': 'nt.times_result(user=0.984375, system=1.171875, children_user=0.0, children_system=0.0, elapsed=0.0)', 'environment_variables': {'INSTAGRAM_ACCESS_TOKEN': 'EAAaaZBV...ZDZD', 'INSTAGRAM_USER_ID': '17841439653964722', 'INSTAGRAM_APP_ID': '1859245554779257', 'GROQ_API_KEY': 'gsk_mo5y...updU', 'SOCIAL_MEDIA_AI_MODEL': 'llama3-8b-8192'}, 'api_endpoints': {'media_creation': 'https://graph.facebook.com/v18.0/{user_id}/media', 'media_publish': 'https://graph.facebook.com/v18.0/{user_id}/media_publish', 'user_info': 'https://graph.facebook.com/v18.0/{user_id}'}, 'required_permissions': ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']}
+2026-04-29 18:23:38,426 - social_media_publisher.sub_agents.instagram - INFO - Instagram agent initialized successfully
+2026-04-29 18:23:38,427 - social_media_publisher.sub_agents.base - INFO - InstagramAgent initialized for instagram
+2026-04-29 18:23:38,427 - social_media_publisher.factory - INFO - Created new InstagramAgent for platform: instagram
+2026-04-29 18:23:38,429 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:23:38,430 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:23:38,430 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:23:38,431 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:23:38,431 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Schedule and publish the caption on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:23:44,626 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:23:44,626 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077320928321799"}
+2026-04-29 18:23:44,627 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077320928321799
+2026-04-29 18:23:49,277 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 18097210841022429
+2026-04-29 18:23:49,386 - server - INFO - Shutting down AI Startup System...
+2026-04-29 18:23:49,387 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 18:23:49,390 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 18:23:49,397 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 18:23:49,399 - ai_service - INFO - AI service cleanup completed
+2026-04-29 18:23:49,399 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 18:23:49,400 - server - INFO - AI providers cleanup completed
+2026-04-29 18:24:01,604 - root - INFO - Logging system initialized successfully
+2026-04-29 18:24:01,607 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:24:01,616 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 18:24:07,739 - root - INFO - Logging system initialized successfully
+2026-04-29 18:24:07,741 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:24:07,816 - server - INFO - Starting AI Startup System...
+2026-04-29 18:24:07,817 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 18:24:09,711 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 18:24:09,713 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 18:24:09,714 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 18:24:09,715 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:24:11,146 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:24:11,162 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 18:24:11,165 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 18:24:11,179 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 18:24:12,858 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:24:12,977 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 18:24:13,045 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:24:13,118 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 18:24:13,120 - server - INFO - AI providers initialized successfully
+2026-04-29 18:24:15,059 - root - INFO - Logging system initialized successfully
+2026-04-29 18:24:15,060 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:24:15,354 - __main__ - INFO - Starting AI Startup System...
+2026-04-29 18:24:15,357 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 18:24:18,791 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 18:24:18,792 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 18:24:18,792 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 18:24:18,793 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:24:19,685 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:24:19,685 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 18:24:19,685 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 18:24:19,686 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 18:24:20,369 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:24:20,369 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 18:24:20,369 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:24:20,370 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 18:24:20,370 - __main__ - INFO - AI providers initialized successfully
+2026-04-29 18:24:26,931 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:24:27,783 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:27,787 - ai_service - INFO - Content generated successfully, length: 313
+2026-04-29 18:24:27,811 - utils - INFO - Content Writer v2 Main Agent detected for request 507e9156-0779-4505-85dd-ea48fd74dddb
+2026-04-29 18:24:27,869 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:24:29,012 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:24:29,013 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 18:24:29,495 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:29,498 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:24:29,732 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:29,736 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 18:24:29,741 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 18:24:31,566 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:31,900 - utils - INFO - Social Media Publisher Main Agent detected for request 0fd81c1f-143a-4b37-8da3-899d3e30d905
+2026-04-29 18:24:32,288 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:32,293 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:24:32,500 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:24:32,503 - social_media_publisher.sub_agents.instagram - INFO - Instagram API debug info: {'timestamp': 'nt.times_result(user=2.25, system=3.375, children_user=0.0, children_system=0.0, elapsed=0.0)', 'environment_variables': {'INSTAGRAM_ACCESS_TOKEN': 'EAAaaZBV...ZDZD', 'INSTAGRAM_USER_ID': '17841439653964722', 'INSTAGRAM_APP_ID': '1859245554779257', 'GROQ_API_KEY': 'gsk_mo5y...updU', 'SOCIAL_MEDIA_AI_MODEL': 'llama3-8b-8192'}, 'api_endpoints': {'media_creation': 'https://graph.facebook.com/v18.0/{user_id}/media', 'media_publish': 'https://graph.facebook.com/v18.0/{user_id}/media_publish', 'user_info': 'https://graph.facebook.com/v18.0/{user_id}'}, 'required_permissions': ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']}
+2026-04-29 18:24:32,503 - social_media_publisher.sub_agents.instagram - INFO - Instagram agent initialized successfully
+2026-04-29 18:24:32,506 - social_media_publisher.sub_agents.base - INFO - InstagramAgent initialized for instagram
+2026-04-29 18:24:32,508 - social_media_publisher.factory - INFO - Created new InstagramAgent for platform: instagram
+2026-04-29 18:24:32,511 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:24:32,512 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:24:32,514 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:24:32,515 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:24:32,516 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Publish the caption on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:24:38,439 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:24:38,441 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077320991321799"}
+2026-04-29 18:24:38,442 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077320991321799
+2026-04-29 18:24:46,214 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 17924272899323764
+2026-04-29 18:35:13,172 - server - INFO - Shutting down AI Startup System...
+2026-04-29 18:35:13,172 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 18:35:13,174 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 18:35:13,175 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 18:35:13,177 - ai_service - INFO - AI service cleanup completed
+2026-04-29 18:35:13,178 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 18:35:13,178 - server - INFO - AI providers cleanup completed
+2026-04-29 18:35:16,173 - root - INFO - Logging system initialized successfully
+2026-04-29 18:35:16,175 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:35:16,188 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 18:35:20,698 - root - INFO - Logging system initialized successfully
+2026-04-29 18:35:20,699 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:35:20,760 - server - INFO - Starting AI Startup System...
+2026-04-29 18:35:20,761 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 18:35:21,622 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 18:35:21,623 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 18:35:21,623 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 18:35:21,623 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:35:21,880 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:35:21,881 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 18:35:21,881 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 18:35:21,881 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 18:35:22,107 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:35:22,107 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 18:35:22,107 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 18:35:22,108 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 18:35:22,108 - server - INFO - AI providers initialized successfully
+2026-04-29 18:35:52,536 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:35:53,387 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:53,398 - ai_service - INFO - Content generated successfully, length: 340
+2026-04-29 18:35:53,452 - utils - INFO - Content Writer v2 Main Agent detected for request 3aae23ca-909d-4769-8fe1-6c3239c0d758
+2026-04-29 18:35:53,524 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 18:35:54,531 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 18:35:54,531 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 18:35:55,130 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:55,133 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:35:55,276 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:55,279 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 18:35:55,280 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 18:35:56,147 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:56,497 - utils - INFO - Social Media Publisher Main Agent detected for request 442d439f-bc55-48dc-be87-1f8a0c34290c
+2026-04-29 18:35:56,853 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:56,856 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:35:57,117 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:35:57,122 - social_media_publisher.sub_agents.instagram - INFO - Instagram API debug info: {'timestamp': 'nt.times_result(user=1.234375, system=1.59375, children_user=0.0, children_system=0.0, elapsed=0.0)', 'environment_variables': {'INSTAGRAM_ACCESS_TOKEN': 'EAAaaZBV...ZDZD', 'INSTAGRAM_USER_ID': '17841439653964722', 'INSTAGRAM_APP_ID': '1859245554779257', 'GROQ_API_KEY': 'gsk_mo5y...updU', 'SOCIAL_MEDIA_AI_MODEL': 'llama3-8b-8192'}, 'api_endpoints': {'media_creation': 'https://graph.facebook.com/v18.0/{user_id}/media', 'media_publish': 'https://graph.facebook.com/v18.0/{user_id}/media_publish', 'user_info': 'https://graph.facebook.com/v18.0/{user_id}'}, 'required_permissions': ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']}
+2026-04-29 18:35:57,123 - social_media_publisher.sub_agents.instagram - INFO - Instagram agent initialized successfully
+2026-04-29 18:35:57,124 - social_media_publisher.sub_agents.base - INFO - InstagramAgent initialized for instagram
+2026-04-29 18:35:57,127 - social_media_publisher.factory - INFO - Created new InstagramAgent for platform: instagram
+2026-04-29 18:35:57,131 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:35:57,135 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:35:57,136 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:35:57,137 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:35:57,138 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Schedule and publish the caption on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:36:22,373 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:36:22,373 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077323028321799"}
+2026-04-29 18:36:22,374 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077323028321799
+2026-04-29 18:36:49,669 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 17923031412335883
+2026-04-29 18:41:31,589 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:41:33,012 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:41:33,013 - ai_service - INFO - Content generated successfully, length: 348
+2026-04-29 18:42:16,737 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:42:17,917 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:42:17,919 - ai_service - INFO - Content generated successfully, length: 349
+2026-04-29 18:45:33,671 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:45:34,616 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:45:34,619 - ai_service - INFO - Content generated successfully, length: 338
+2026-04-29 18:45:46,658 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:45:47,565 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:45:47,568 - ai_service - INFO - Content generated successfully, length: 385
+2026-04-29 18:46:08,124 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:46:08,877 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:46:08,880 - ai_service - INFO - Content generated successfully, length: 349
+2026-04-29 18:49:41,581 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:49:42,589 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:49:42,592 - ai_service - INFO - Content generated successfully, length: 317
+2026-04-29 18:49:42,616 - utils - INFO - Content Writer v2 Main Agent detected for request 500e381f-5bd3-469d-a23e-9455f0c8420b
+2026-04-29 18:49:43,398 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:49:43,399 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:49:44,847 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:49:47,516 - utils - INFO - Social Media Publisher Main Agent detected for request 3753b515-f1e5-45a3-97e4-70513ec0d0b0
+2026-04-29 18:49:47,760 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:49:47,763 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:49:47,765 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:49:47,766 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:49:47,767 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:49:47,768 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:49:47,769 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Publish the created post on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:50:14,436 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:50:14,436 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077324240321799"}
+2026-04-29 18:50:14,437 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077324240321799
+2026-04-29 18:50:40,867 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 17925988644296720
+2026-04-29 18:58:17,151 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 18:58:18,211 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:58:18,213 - ai_service - INFO - Content generated successfully, length: 331
+2026-04-29 18:58:18,232 - utils - INFO - Content Writer v2 Main Agent detected for request 9ca3a82c-4e0f-4826-8849-fdf7c7e6b547
+2026-04-29 18:58:18,789 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:58:18,790 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 18:58:20,168 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:58:22,832 - utils - INFO - Social Media Publisher Main Agent detected for request 94472372-b4e3-4961-ad74-300e983e0553
+2026-04-29 18:58:22,964 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 18:58:22,966 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 18:58:22,967 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 18:58:22,969 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 18:58:22,970 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 18:58:22,971 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 18:58:22,972 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Publish the post on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 18:58:47,955 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 18:58:47,956 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077325584321799"}
+2026-04-29 18:58:47,957 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077325584321799
+2026-04-29 18:59:13,000 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 17995992971941333
+2026-04-29 18:59:27,061 - server - INFO - Shutting down AI Startup System...
+2026-04-29 18:59:27,062 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 18:59:27,077 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 18:59:27,095 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 18:59:27,104 - ai_service - INFO - AI service cleanup completed
+2026-04-29 18:59:27,106 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 18:59:27,107 - server - INFO - AI providers cleanup completed
+2026-04-29 18:59:33,885 - root - INFO - Logging system initialized successfully
+2026-04-29 18:59:33,886 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 18:59:33,888 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 18:59:37,823 - __main__ - ERROR - Server startup failed: name 'Dict' is not defined
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
+    uvicorn.run(
+    ~~~~~~~~~~~^
+        "server:app",
+        ^^^^^^^^^^^^^
+    ...<4 lines>...
+        access_log=False,  # We handle our own access logging
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 14, in <module>
+    from routes import api_router
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\routes.py", line 6, in <module>
+    from models import OrchestrateRequest, OrchestrateResponse, StepLog, AgentRun
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 104, in <module>
+    class CEOOrchestrationResponse(BaseModel):
+    ...<10 lines>...
+        metadata: Optional[dict] = None
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 114, in CEOOrchestrationResponse
+    learning_applied: Optional[Dict[str, Any]] = None
+                               ^^^^
+NameError: name 'Dict' is not defined. Did you mean: 'dict'?
+2026-04-29 19:00:33,503 - root - INFO - Logging system initialized successfully
+2026-04-29 19:00:33,504 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 19:00:33,509 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 19:00:37,534 - ceo_learning_system - INFO - Learning memory saved successfully
+2026-04-29 19:00:37,536 - ceo_orchestration_routes - INFO - CEO Learning System initialized
+2026-04-29 19:00:37,543 - root - INFO - Logging system initialized successfully
+2026-04-29 19:00:37,543 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 19:00:37,588 - server - INFO - Starting AI Startup System...
+2026-04-29 19:00:37,589 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 19:00:38,626 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 19:00:38,627 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 19:00:38,627 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 19:00:38,628 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 19:00:38,985 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 19:00:38,985 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 19:00:38,986 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 19:00:38,987 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 19:00:39,429 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 19:00:39,430 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 19:00:39,430 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 19:00:39,431 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 19:00:39,431 - server - INFO - AI providers initialized successfully
+2026-04-29 19:00:59,713 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 19:01:00,726 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:00,746 - ai_service - INFO - Content generated successfully, length: 307
+2026-04-29 19:01:00,802 - utils - INFO - Content Writer v2 Main Agent detected for request 5905ca13-3768-4598-b84b-e2d6cdcad73f
+2026-04-29 19:01:00,968 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 19:01:02,222 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 19:01:02,223 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 19:01:02,794 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:02,799 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 19:01:03,042 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:03,045 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 19:01:03,047 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 19:01:04,482 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:07,129 - utils - INFO - Social Media Publisher Main Agent detected for request 8c1876f5-37fc-426d-a0bd-0d657ecc0075
+2026-04-29 19:01:07,413 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:07,421 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 19:01:07,758 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 19:01:07,760 - social_media_publisher.sub_agents.instagram - INFO - Instagram API debug info: {'timestamp': 'nt.times_result(user=4.953125, system=5.671875, children_user=0.0, children_system=0.0, elapsed=0.0)', 'environment_variables': {'INSTAGRAM_ACCESS_TOKEN': 'EAAaaZBV...ZDZD', 'INSTAGRAM_USER_ID': '17841439653964722', 'INSTAGRAM_APP_ID': '1859245554779257', 'GROQ_API_KEY': 'gsk_mo5y...updU', 'SOCIAL_MEDIA_AI_MODEL': 'llama3-8b-8192'}, 'api_endpoints': {'media_creation': 'https://graph.facebook.com/v18.0/{user_id}/media', 'media_publish': 'https://graph.facebook.com/v18.0/{user_id}/media_publish', 'user_info': 'https://graph.facebook.com/v18.0/{user_id}'}, 'required_permissions': ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']}
+2026-04-29 19:01:07,761 - social_media_publisher.sub_agents.instagram - INFO - Instagram agent initialized successfully
+2026-04-29 19:01:07,762 - social_media_publisher.sub_agents.base - INFO - InstagramAgent initialized for instagram
+2026-04-29 19:01:07,762 - social_media_publisher.factory - INFO - Created new InstagramAgent for platform: instagram
+2026-04-29 19:01:07,763 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 19:01:07,763 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 19:01:07,764 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 19:01:07,764 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 19:01:07,764 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Publish the post on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 19:01:34,587 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 19:01:34,588 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077326142321799"}
+2026-04-29 19:01:34,588 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077326142321799
+2026-04-29 19:02:01,626 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 18050490614730546
+2026-04-29 19:06:50,741 - server - INFO - Shutting down AI Startup System...
+2026-04-29 19:06:50,742 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 19:06:50,743 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 19:06:50,745 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 19:06:50,747 - ai_service - INFO - AI service cleanup completed
+2026-04-29 19:06:50,748 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 19:06:50,748 - server - INFO - AI providers cleanup completed
+2026-04-29 20:26:19,432 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 20:26:19,997 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 20:26:20,000 - ai_service - INFO - Content generated successfully, length: 370
+2026-04-29 20:26:20,027 - utils - INFO - Content Writer v2 Main Agent detected for request c9d5b5c1-b293-43d0-bc3b-bf288bbb599e
+2026-04-29 20:26:20,237 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 20:26:20,239 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 20:26:21,676 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 20:26:24,313 - utils - INFO - Social Media Publisher Main Agent detected for request c772c063-54fd-4f7e-b3b1-5f4ab99b2197
+2026-04-29 20:26:24,698 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 20:26:24,700 - social_media_publisher.main_agent - INFO - Social Media Publisher Main Agent initialized with groq provider
+2026-04-29 20:26:24,701 - social_media_publisher.sub_agents.base - WARNING - Content optimization failed: Model llama3-8b-8192 not supported by Groq provider. Using original content.
+2026-04-29 20:26:24,701 - social_media_publisher.sub_agents.base - WARNING - Hashtag generation failed: Model llama3-8b-8192 not supported by Groq provider
+2026-04-29 20:26:24,702 - social_media_publisher.sub_agents.instagram - INFO - No image provided, using default reliable image URL
+2026-04-29 20:26:24,702 - social_media_publisher.sub_agents.instagram - INFO - Added image_url to media data: https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM
+2026-04-29 20:26:24,703 - social_media_publisher.sub_agents.instagram - INFO - Creating Instagram media container with data: {'caption': 'Schedule and publish the caption on Instagram.', 'access_token': 'EAAaaZBVbXxHkBRabaiSsUb4O6JElrZCvfEZCsgScwjQNoREjDZCcnZBpMFjMlh8ZABFldJkWwldFsQHelRnDxZADI0lRsTotNia2mZBybjxLpQG3ZAZCmndfaeNtKvZChB7jDa93bHDTV8D2uZAmLuTyiDYrIdlTGX7XIZBhieJUgjKoZBEZCUBZBgpQZA7ZBT23XauJZAbfQZDZD', 'image_url': 'https://fastly.picsum.photos/id/98/1080/1080.jpg?hmac=dJhmzeqsZd6CeSVc9GB9e-8dVvc2EuiIPVwNC4NzAeM'}
+2026-04-29 20:26:30,656 - social_media_publisher.sub_agents.instagram - INFO - Instagram API response status: 200
+2026-04-29 20:26:30,657 - social_media_publisher.sub_agents.instagram - INFO - Instagram API success response: {"id":"18077337473321799"}
+2026-04-29 20:26:30,657 - social_media_publisher.sub_agents.instagram - INFO - Successfully created media container: 18077337473321799
+2026-04-29 20:26:34,273 - social_media_publisher.sub_agents.instagram - INFO - Successfully published to Instagram: 17946038153997446
+2026-04-29 21:00:07,765 - root - INFO - Logging system initialized successfully
+2026-04-29 21:00:07,766 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 21:00:07,768 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 21:00:13,709 - ceo_learning_system - INFO - Learning memory saved successfully
+2026-04-29 21:00:13,710 - ceo_orchestration_routes - INFO - CEO Learning System initialized
+2026-04-29 21:00:13,768 - root - INFO - Logging system initialized successfully
+2026-04-29 21:00:13,769 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 21:00:13,879 - server - INFO - Starting AI Startup System...
+2026-04-29 21:00:13,880 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 21:00:15,985 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 21:00:16,011 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 21:00:16,044 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 21:00:16,088 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 21:00:17,292 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 21:00:17,297 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 21:00:17,300 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 21:00:17,305 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 21:00:18,633 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 21:00:18,662 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 21:00:18,670 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 21:00:18,673 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 21:00:18,677 - server - INFO - AI providers initialized successfully
+2026-04-29 21:00:35,123 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 21:00:35,718 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:00:35,731 - ai_service - INFO - Content generated successfully, length: 247
+2026-04-29 21:00:35,762 - utils - INFO - Content Writer v2 Main Agent detected for request cca3a61e-179f-40bf-87ec-f3829ca5ed75
+2026-04-29 21:00:35,840 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 21:00:36,450 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 21:00:36,450 - ai_providers.factory - INFO - Successfully created and cached provider: groq
+2026-04-29 21:00:36,709 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:00:36,712 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 21:00:36,942 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:00:36,943 - content_writer_v2.sub_agents.base - INFO - SocialMediaAgent initialized with groq provider
+2026-04-29 21:00:36,944 - content_writer_v2.factory - INFO - Created new SocialMediaAgent for category: social_media
+2026-04-29 21:00:38,331 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:14:25,811 - ai_service - INFO - Generating content with provider 'groq' using model 'default'
+2026-04-29 21:14:26,400 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:14:26,402 - ai_service - INFO - Content generated successfully, length: 242
+2026-04-29 21:14:26,430 - utils - INFO - Content Writer v2 Main Agent detected for request 0d70a96e-478a-4216-aa01-96eb95bee3fa
+2026-04-29 21:14:26,575 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:14:26,576 - content_writer_v2.main_agent - INFO - Content Writer Main Agent initialized with groq provider
+2026-04-29 21:14:28,361 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-29 21:27:28,631 - root - INFO - Logging system initialized successfully
+2026-04-29 21:27:28,631 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 21:27:28,633 - __main__ - INFO - Starting server on 127.0.0.1:8000 with debug=False
+2026-04-29 21:27:32,254 - ceo_learning_system - INFO - Learning memory saved successfully
+2026-04-29 21:27:32,255 - ceo_orchestration_routes - INFO - CEO Learning System initialized
+2026-04-29 21:27:32,283 - root - INFO - Logging system initialized successfully
+2026-04-29 21:27:32,284 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs
+2026-04-29 21:27:32,314 - server - INFO - Starting AI Startup System...
+2026-04-29 21:27:32,314 - ai_providers.factory - INFO - Creating gemini provider instance
+2026-04-29 21:27:32,723 - ai_providers.gemini_provider - INFO - Gemini provider initialized successfully
+2026-04-29 21:27:32,723 - ai_service - INFO - Added AI provider 'gemini' of type 'gemini'
+2026-04-29 21:27:32,724 - ai_startup - INFO - Gemini provider initialized successfully
+2026-04-29 21:27:32,724 - ai_providers.factory - INFO - Creating groq provider instance
+2026-04-29 21:27:32,927 - ai_providers.groq_provider - INFO - Groq provider initialized successfully
+2026-04-29 21:27:32,927 - ai_service - INFO - Added AI provider 'groq' of type 'groq'
+2026-04-29 21:27:32,927 - ai_startup - INFO - Groq provider initialized successfully
+2026-04-29 21:27:32,928 - ai_providers.factory - INFO - Creating openai_router provider instance
+2026-04-29 21:27:33,136 - ai_providers.openai_router_provider - INFO - OpenAI Router provider initialized successfully
+2026-04-29 21:27:33,137 - ai_service - INFO - Added AI provider 'openai_router' of type 'openai_router'
+2026-04-29 21:27:33,137 - ai_startup - INFO - OpenAI Router provider initialized successfully
+2026-04-29 21:27:33,137 - ai_startup - INFO - AI providers initialized: ['gemini', 'groq', 'openai_router']. Default provider: groq
+2026-04-29 21:27:33,137 - server - INFO - AI providers initialized successfully
+2026-04-29 21:32:03,670 - server - INFO - Shutting down AI Startup System...
+2026-04-29 21:32:03,671 - ai_service - INFO - Removed AI provider 'gemini'
+2026-04-29 21:32:03,672 - ai_service - INFO - Removed AI provider 'groq'
+2026-04-29 21:32:03,676 - ai_service - INFO - Removed AI provider 'openai_router'
+2026-04-29 21:32:03,679 - ai_service - INFO - AI service cleanup completed
+2026-04-29 21:32:03,680 - ai_startup - INFO - AI providers cleanup completed
+2026-04-29 21:32:03,680 - server - INFO - AI providers cleanup completed
+2026-04-29 21:52:34,128 - root - INFO - Logging system initialized successfully
+2026-04-29 21:52:34,145 - root - INFO - Log files will be created in: C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\logs

@@ -1,0 +1,109 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 7 (Electric & Neon) tailored to Minimal Sci-Fi",
+  "design_philosophy": {
+    "core_concept": "Futuristic AI Command Center - A living, breathing graph of AI agents collaborating in real-time.",
+    "emotion": "Intelligent, powerful, orchestrated, high-tech but structurally minimal.",
+    "anti_patterns_avoided": "No chaotic neon overload. Colors are used selectively for function (status, data flow) rather than pure decoration. No pure black; using deep tinted slates."
+  },
+  "colors": {
+    "background": {
+      "base": "#0B0F19",
+      "surface": "#121826",
+      "surface_elevated": "#1A2235",
+      "glass": "rgba(18, 24, 38, 0.6)"
+    },
+    "accents": {
+      "primary": "#00F0FF",
+      "secondary": "#FF00FF",
+      "success": "#00FF88",
+      "warning": "#FFB800",
+      "muted": "#3A4B6E"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#94A3B8",
+      "technical": "#00F0FF"
+    },
+    "gradients": {
+      "glow_cyan": "radial-gradient(circle at center, rgba(0,240,255,0.15) 0%, transparent 70%)",
+      "glow_pink": "radial-gradient(circle at center, rgba(255,0,255,0.1) 0%, transparent 70%)",
+      "border_beam": "linear-gradient(90deg, transparent, #00F0FF, transparent)"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Unbounded, sans-serif",
+      "body": "IBM Plex Sans, sans-serif",
+      "technical": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl tracking-tighter font-light",
+      "h2": "text-2xl tracking-tight font-medium",
+      "h3": "text-xl font-medium",
+      "body": "text-base leading-relaxed",
+      "label": "text-xs tracking-[0.2em] uppercase font-technical text-technical"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "The 'Control Room' Grid - High density, precise alignment, exposed structural grid lines.",
+    "layout_structure": {
+      "header": "Minimal floating glass header (z-50) with logo and system status.",
+      "main_canvas": "A massive interactive-feeling node canvas taking up 60% of viewport. CEO at top center. Connecting animated SVG paths to Marketing agents below.",
+      "side_panel": "Live Terminal / Activity Feed logging real-time steps of the AI.",
+      "bottom_dock": "Command input bar with quick-action chips floating above it."
+    }
+  },
+  "surfaces_and_borders": {
+    "agent_cards": {
+      "background": "bg-[#121826]/80 backdrop-blur-md",
+      "border": "1px solid border-cyan-500/20",
+      "hover": "border-cyan-500/50 shadow-[0_0_20px_rgba(0,240,255,0.1)] -translate-y-1 transition-all duration-300",
+      "radius": "rounded-xl"
+    },
+    "terminal_panel": {
+      "background": "bg-[#0B0F19]",
+      "border": "border border-[#3A4B6E]/30",
+      "font": "font-technical"
+    },
+    "glass_panels": {
+      "background": "bg-white/5",
+      "blur": "backdrop-blur-xl",
+      "border": "border border-white/10"
+    }
+  },
+  "motion_and_interactions": {
+    "data_flow": "Use framer-motion to draw SVG lines between nodes (CEO -> Agents). Use stroke-dasharray animation to simulate 'data packets' traveling along the paths.",
+    "status_indicators": "Pulsing colored dots (Green=Working, Cyan=Thinking, Pink=Outputting, Gray=Idle).",
+    "typing_effect": "Logs in the terminal should appear with a typewriter effect.",
+    "microinteractions": "Buttons and inputs glow subtly on hover."
+  },
+  "components_strategy": {
+    "node_graph": "Custom HTML/SVG overlay for the lines. Shadcn Cards for the agent nodes positioned absolutely or via grid.",
+    "input_bar": "Customized Shadcn Input, styled like a CLI prompt ('>') with glowing submit button.",
+    "badges": "For agent roles (e.g., 'SEO', 'Ads') use Shadcn Badge with glassmorphism.",
+    "locked_teams": "Placeholders for 'Engineering', 'Sales' using grayed-out opacity-50 dashed borders with lock icons."
+  },
+  "assets_and_icons": {
+    "icon_library": "lucide-react for system icons (locks, sends, terminals).",
+    "images": {
+      "background": {
+        "url": "https://images.unsplash.com/photo-1759735541630-036eefb7cd3a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwzfHxmdXR1cmlzdGljJTIwYWJzdHJhY3QlMjBkYXJrJTIwYmFja2dyb3VuZCUyMG5lb258ZW58MHx8fHwxNzc3MzQ5NDI1fDA&ixlib=rb-4.1.0&q=85",
+        "usage": "Use as a very low opacity (10-15%) fixed background overlay with mix-blend-screen to give a subtle futuristic texture behind the UI."
+      },
+      "ceo_avatar": {
+        "url": "https://images.unsplash.com/photo-1677212004257-103cfa6b59d0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHw0fHxyb2JvdCUyMGZhY2UlMjBwcm9maWxlJTIwbmVvbnxlbnwwfHx8fDE3NzczNDk0MjV8MA&ixlib=rb-4.1.0&q=85",
+        "usage": "CEO Agent Node Profile Picture"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install Unbounded, IBM Plex Sans, and JetBrains Mono fonts from Google Fonts via next/font or standard import in CSS.",
+    "Create a complex single-page dashboard. The layout should have a central area for the visual Node Graph and a side/bottom area for Terminal Logs and Command Input.",
+    "Use Framer Motion to create connecting SVG lines between the CEO node and the Marketing Team nodes. Animate dashes along these lines to simulate data transfer when a task is active.",
+    "Build a state machine (can be dummy React state) where entering a command sets the CEO to 'Thinking', routes a task to a specific Marketing agent (who turns 'Working'), logs the process in the terminal, and then outputs a result.",
+    "Use 'lucide-react' for all icons. You can use generic bot icons (Bot, Cpu, Brain) for the Marketing sub-agents.",
+    "Include greyed-out 'Add Team' placeholder slots for 'Sales', 'Engineering' to show future scalability.",
+    "Apply 'optical clarity' glassmorphism to floating UI elements (input bar, terminal card)."
+  ]
+}

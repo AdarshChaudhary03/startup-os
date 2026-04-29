@@ -1,0 +1,7 @@
+/* App-specific styles handled in component files & index.css */
+.App {
+    min-height: 100vh;
+    background: var(--bg-base);
+    position: relative;
+    overflow-x: hidden;
+}

@@ -1,0 +1,38 @@
+{
+  "delegation_patterns": [
+    {
+      "id": "content_writer_to_social_media_publisher_0",
+      "source_agent": "content_writer",
+      "target_agent": "social_media_publisher",
+      "learning_rule": "When Content Writer agent completes a task and the next agent in sequence is Social Media Publisher, always pass the 'output' field from Content Writer's response to Social Media Publisher as the task content. The Social Media Publisher should receive the actual content to publish, not instructions about publishing. Format the content appropriately for social media posting, removing markdown and keeping it concise.",
+      "context": {
+        "agent_sequence": [
+          "content_writer",
+          "social_media_publisher"
+        ],
+        "output_field": "output",
+        "task_format": "formatted_with_previous_output",
+        "learning_type": "output_passing",
+        "priority": "high"
+      },
+      "created_at": "2026-04-28T00:00:00.000000",
+      "usage_count": 4,
+      "last_used": "2026-04-29T21:27:32.252458"
+    }
+  ],
+  "agent_sequences": {
+    "content_writer_to_social_media_publisher": [
+      "content_writer_to_social_media_publisher_0"
+    ]
+  },
+  "output_passing_rules": {
+    "content_writer_to_social_media_publisher": {
+      "rule": "When Content Writer agent completes a task and the next agent in sequence is Social Media Publisher, always pass the 'output' field from Content Writer's response to Social Media Publisher as the task content. The Social Media Publisher should receive the actual content to publish, not instructions about publishing. Format the content appropriately for social media posting, removing markdown and keeping it concise.",
+      "pass_output": true,
+      "output_field": "output",
+      "created_at": "2026-04-28T00:00:00.000000"
+    }
+  },
+  "created_at": "2026-04-28T00:00:00.000000",
+  "last_updated": "2026-04-29T21:27:32.252467"
+}

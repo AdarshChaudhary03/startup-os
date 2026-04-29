@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --bg-base: #0B0F19;
+    --bg-surface: #121826;
+    --bg-elevated: #1A2235;
+    --accent-cyan: #00F0FF;
+    --accent-pink: #FF00FF;
+    --accent-green: #00FF88;
+    --accent-amber: #FFB800;
+    --accent-purple: #A78BFA;
+    --muted: #3A4B6E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+}
+
+html, body {
+    margin: 0;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    min-height: 100vh;
+}
+
+/* ============ shadcn token mapping (dark only) ============ */
+@layer base {
+    :root {
+        --background: 222 30% 7%;
+        --foreground: 0 0% 100%;
+        --card: 222 30% 11%;
+        --card-foreground: 0 0% 100%;
+        --popover: 222 30% 9%;
+        --popover-foreground: 0 0% 100%;
+        --primary: 186 100% 50%;
+        --primary-foreground: 222 30% 7%;
+        --secondary: 222 30% 18%;
+        --secondary-foreground: 0 0% 100%;
+        --muted: 222 30% 18%;
+        --muted-foreground: 215 20% 65%;
+        --accent: 222 30% 22%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 75% 55%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 222 30% 22%;
+        --input: 222 30% 22%;
+        --ring: 186 100% 50%;
+        --radius: 0.75rem;
+    }
+}
+
+@layer base {
+    * { @apply border-border; }
+    body { @apply bg-background text-foreground; }
+}
+
+/* ============ Custom font utilities ============ */
+.font-display { font-family: 'Unbounded', sans-serif; letter-spacing: -0.02em; }
+.font-body { font-family: 'IBM Plex Sans', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ============ Background grid + glows ============ */
+.bg-grid {
+    background-image:
+        linear-gradient(to right, rgba(58, 75, 110, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(58, 75, 110, 0.12) 1px, transparent 1px);
+    background-size: 56px 56px;
+}
+
+.glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+.glow-pink {
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.22), inset 0 0 20px rgba(255, 0, 255, 0.05);
+}
+
+.glow-green {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.25), inset 0 0 20px rgba(0, 255, 136, 0.05);
+}
+
+/* Scanline / film grain overlay */
+.scanlines::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.015) 0px,
+            rgba(255,255,255,0.015) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+}
+
+/* Pulse ring animation */
+@keyframes pulse-ring {
+    0% { transform: scale(0.85); opacity: 0.85; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.pulse-ring {
+    animation: pulse-ring 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Data packet flowing along path */
+@keyframes dash-flow {
+    to { stroke-dashoffset: -200; }
+}
+.path-flow {
+    stroke-dasharray: 6 14;
+    animation: dash-flow 2s linear infinite;
+}
+
+/* Caret blink */
+@keyframes blink {
+    0%,49% { opacity: 1; } 50%,100% { opacity: 0; }
+}
+.caret { animation: blink 1s steps(1) infinite; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.35); }
+
+/* Selection */
+::selection { background: rgba(0, 240, 255, 0.35); color: #fff; }
