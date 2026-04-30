@@ -132,8 +132,9 @@ async def orchestrate_with_planning_only(req: OrchestrateRequest, request: Reque
             
         team_name_local = next((t["name"] for t in TEAMS if t["id"] == team_id_resolved), team_id_resolved.title())
         
-        # Generate endpoint path for this agent
-        endpoint_path = f"/api/agents/{agent_obj['id'].replace('_', '-')}"
+        # Generate endpoint path for this agent - use underscore format to match actual routes
+        # The agent routes are defined with underscore format (e.g., /social_publisher)
+        endpoint_path = f"/api/agents/{agent_obj['id']}"
         
         orchestration_steps.append(OrchestrationPlanStep(
             agent_id=agent_obj["id"],

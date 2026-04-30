@@ -14,10 +14,13 @@ from middleware import APILoggingMiddleware, OrchestrationLoggingMiddleware
 from routes import api_router
 from health import health_router
 from agent_routes import agent_router
+from simple_agent_routes import router as simple_agent_router
 from orchestration_routes import orchestration_router
 from ceo_orchestration_routes import ceo_router
 from ceo_requirements_gathering import ceo_requirements_router
-from ceo_chat_interface import ceo_chat_router
+from ceo_chat_routes import ceo_chat_router
+from ceo_chat_message_routes import ceo_message_router
+from ceo_simplified_routes import ceo_simplified_router
 
 # Import exception handlers
 from exceptions import (
@@ -70,10 +73,13 @@ app.add_middleware(OrchestrationLoggingMiddleware)
 app.include_router(api_router)
 app.include_router(health_router)
 app.include_router(agent_router)
+app.include_router(simple_agent_router)
 app.include_router(orchestration_router)
 app.include_router(ceo_router)
 app.include_router(ceo_requirements_router)
 app.include_router(ceo_chat_router)
+app.include_router(ceo_message_router)
+app.include_router(ceo_simplified_router)
 
 # Add exception handlers
 app.add_exception_handler(BaseAPIException, api_exception_handler)

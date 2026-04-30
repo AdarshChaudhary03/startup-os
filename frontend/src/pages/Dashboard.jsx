@@ -6,12 +6,16 @@ import {
   getOrchestrationPlan,
   executeAgent,
 } from "../lib/api";
+import FlowVisibility from "../components/FlowVisibility";
+import { useAgentActions } from "../store/agentStore";
 import CEONode from "../components/CEONode";
 import CEONodev2 from "../components/CEONodev2";
+import CEOChatInterface from "../components/CEOChatInterface";
 import AgentNode from "../components/AgentNode";
 import TeamSection from "../components/TeamSection";
 import ConnectionLines from "../components/ConnectionLines";
 import TerminalFeed from "../components/TerminalFeed";
+import ActivityFlowTabs from "../components/ActivityFlowTabs";
 import CommandBar from "../components/CommandBar";
 import OutputDialog from "../components/OutputDialog";
 import { Activity, Sparkles, ToggleLeft, ToggleRight } from "lucide-react";
@@ -61,6 +65,8 @@ export default function Dashboard() {
   const [activeAgentId, setActiveAgentId] = useState(null);
   const [agentStatuses, setAgentStatuses] = useState({});
   const [useVoiceMode, setUseVoiceMode] = useState(false);
+  const [showCEOChat, setShowCEOChat] = useState(false);
+  const [initialChatMessage, setInitialChatMessage] = useState("");
   const [logs, setLogs] = useState([
     {
       actor: "SYSTEM",
@@ -108,30 +114,103 @@ export default function Dashboard() {
       return;
     }
     if (!task?.trim()) return;
+
+    // Open CEO chat interface instead of directly processing
+    setShowCEOChat(true);
+    setInitialChatMessage(task);
+  };
+
+  const handleChatRequirementsFinalized = async ({
+    requirements,
+    plan,
+    orchestrationResult,
+    conversationId,
+  }) => {
+    // Add detailed logging for debugging
+    console.log("[CEO_DEBUG] handleChatRequirementsFinalized called");
+    console.log("[CEO_DEBUG] Requirements:", requirements);
+    console.log("[CEO_DEBUG] Plan:", plan);
+    console.log("[CEO_DEBUG] OrchestrationResult:", orchestrationResult);
+    console.log("[CEO_DEBUG] ConversationId:", conversationId);
+
+    // Close the chat interface
+    setShowCEOChat(false);
     setRunning(true);
     setCeoStatus("thinking");
-    pushLog({ actor: "USER", message: task, status: "info" });
+
+    pushLog({
+      actor: "USER",
+      message: requirements.original_task || "Task submitted via chat",
+      status: "info",
+    });
     pushLog({
       actor: "CEO",
-      message: "Receiving directive…",
+      message: "Requirements gathered. Processing plan…",
       status: "thinking",
     });
 
     try {
       await new Promise((r) => setTimeout(r, 700));
 
-      // Step 1: Get orchestration plan from CEO
+      // Check if we have orchestration result from backend
+      let orchestrationPlan = null;
+      console.log(
+        "[CEO_DEBUG] Checking orchestrationResult:",
+        orchestrationResult,
+      );
+      console.log(
+        "[CEO_DEBUG] orchestrationResult type:",
+        typeof orchestrationResult,
+      );
+      console.log(
+        "[CEO_DEBUG] orchestrationResult keys:",
+        orchestrationResult ? Object.keys(orchestrationResult) : "null",
+      );
+
+      if (orchestrationResult && !orchestrationResult.error) {
+        orchestrationPlan = orchestrationResult;
+        pushLog({
+          actor: "CEO",
+          message: "Orchestration plan received from backend",
+          status: "info",
+        });
+      } else if (orchestrationResult && orchestrationResult.error) {
+        pushLog({
+          actor: "CEO",
+          message: `Orchestration error: ${orchestrationResult.error}`,
+          status: "error",
+        });
+      } else {
+        console.log(
+          "[CEO_DEBUG] No orchestration result or result is null/undefined",
+        );
+      }
+
+      // Use orchestration plan if available, otherwise fall back to the plan from requirements
+      const finalPlan = orchestrationPlan || plan || {};
+      const steps = finalPlan.steps || [];
+
+      console.log("[CEO_DEBUG] orchestrationPlan:", orchestrationPlan);
+      console.log("[CEO_DEBUG] plan from requirements:", plan);
+      console.log("[CEO_DEBUG] finalPlan selected:", finalPlan);
+      console.log("[CEO_DEBUG] steps extracted:", steps);
+
+      // Add detailed logging for debugging
+      console.log("[CEO_DEBUG] Final Plan:", finalPlan);
+      console.log(
+        "[CEO_DEBUG] Plan mode:",
+        finalPlan.mode || plan.mode || "UNDEFINED",
+      );
+      console.log("[CEO_DEBUG] Plan steps:", steps);
+      console.log("[CEO_DEBUG] Number of agents:", steps.length || 1);
+      console.log(
+        "[CEO_DEBUG] Plan rationale:",
+        finalPlan.rationale || plan.rationale || "UNDEFINED",
+      );
+
       pushLog({
         actor: "CEO",
-        message: "Consulting Claude · drafting multi-agent plan…",
-        status: "thinking",
-      });
-
-      const plan = await getOrchestrationPlan({ task, agent_id });
-
-      pushLog({
-        actor: "CEO",
-        message: `Plan ready · mode=${plan.mode} · ${plan.steps?.length || 1} agent(s) · ${plan.rationale}`,
+        message: `Plan ready · mode=${finalPlan.mode || plan.mode || "undefined"} · ${steps.length || 1} agent(s) · ${finalPlan.rationale || plan.rationale || "undefined"}`,
         status: "info",
       });
 
@@ -142,8 +221,8 @@ export default function Dashboard() {
       const finalAgentRuns = [];
 
       // Step 2: Execute each agent individually with CEO-mediated workflow
-      for (let i = 0; i < plan.steps.length; i++) {
-        const step = plan.steps[i];
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
 
         // Log handoff to agent
         pushLog({
@@ -183,7 +262,7 @@ export default function Dashboard() {
             metadata: {
               orchestration_request_id: plan.request_id,
               step_number: i + 1,
-              total_steps: plan.steps.length,
+              total_steps: steps.length,
             },
           });
 
@@ -208,7 +287,7 @@ export default function Dashboard() {
           // CEO analyzes and processes the output
           pushLog({
             actor: "CEO",
-            message: `Analysis complete. ${i < plan.steps.length - 1 ? "Preparing delegation to next agent." : "All tasks completed successfully."}`,
+            message: `Analysis complete. ${i < steps.length - 1 ? "Preparing delegation to next agent." : "All tasks completed successfully."}`,
             status: "info",
           });
 
@@ -235,11 +314,11 @@ export default function Dashboard() {
           }));
 
           // If there's a next step, CEO prepares for next delegation
-          if (i < plan.steps.length - 1) {
+          if (i < steps.length - 1) {
             setCeoStatus("working");
             pushLog({
               actor: "CEO",
-              message: `Extracting relevant content for ${plan.steps[i + 1].agent_name}...`,
+              message: `Extracting relevant content for ${steps[i + 1].agent_name}...`,
               status: "working",
             });
             await new Promise((r) => setTimeout(r, 800));
@@ -248,7 +327,7 @@ export default function Dashboard() {
             setCeoStatus("routing");
             pushLog({
               actor: "CEO",
-              message: `Ready to delegate to ${plan.steps[i + 1].agent_name}...`,
+              message: `Ready to delegate to ${steps[i + 1].agent_name}...`,
               status: "routing",
             });
             await new Promise((r) => setTimeout(r, 300));
@@ -510,7 +589,7 @@ export default function Dashboard() {
           className="relative border-l border-white/5 bg-[#0B0F19]/80 backdrop-blur-md"
           data-testid="terminal-aside"
         >
-          <TerminalFeed logs={logs} />
+          <ActivityFlowTabs logs={logs} />
         </aside>
       </main>
 
@@ -530,6 +609,20 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* CEO Chat Interface */}
+      {showCEOChat && (
+        <CEOChatInterface
+          onClose={() => {
+            setShowCEOChat(false);
+            setInitialChatMessage("");
+          }}
+          onRequirementsFinalized={handleChatRequirementsFinalized}
+          initialMessage={initialChatMessage}
+        />
+      )}
+
+      {/* Flow Visibility Dashboard is now integrated in the sidebar tabs */}
     </div>
   );
 }

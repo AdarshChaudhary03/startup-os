@@ -26,8 +26,10 @@ class AgentRun(BaseModel):
 
 class AgentExecutionRequest(BaseModel):
     task: str
-    context: Optional[str] = None  # Optional context from previous agents
+    context: Optional[Any] = None  # Optional context from previous agents (can be string or dict)
     metadata: Optional[dict] = None  # Optional metadata for agent execution
+    caption: Optional[str] = None  # Optional caption for social media posts
+    content: Optional[str] = None  # Optional content for social media posts
 
 
 class AgentExecutionResponse(BaseModel):

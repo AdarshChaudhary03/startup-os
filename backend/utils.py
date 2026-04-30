@@ -185,9 +185,60 @@ async def execute_agent_real(agent_id: str, task: str, request_id: str) -> str:
             main_agent = SocialMediaPublisherMainAgent(DEFAULT_CONFIG)
             await main_agent.initialize()
             
+            # Extract proper content from task parameter
+            content = task
+            caption = None
+            session_id = None
+            
+            # If task is a dict (from agent_routes), extract the proper fields
+            if isinstance(task, dict):
+                logger.debug(f"[SOCIAL_DEBUG] Task is dict: {task}")
+                # Priority: caption > content > content_writer_output from context > task
+                caption = task.get('caption')
+                content = caption or task.get('content')
+                
+                # If no caption/content, try to extract from context
+                if not content or content == task.get('task'):
+                    context = task.get('context')
+                    if context:
+                        if isinstance(context, dict):
+                            content = context.get('caption') or context.get('content_writer_output') or content
+                        elif isinstance(context, str):
+                            try:
+                                import json
+                                context_dict = json.loads(context)
+                                content = context_dict.get('caption') or context_dict.get('content_writer_output') or content
+                            except:
+                                pass
+                
+                # Fallback to task only if it's not an instruction
+                if not content or content.startswith("Schedule") or content.startswith("Publish"):
+                    content = task.get('task', '')
+                
+                session_id = task.get('session_id') or (task.get('metadata') or {}).get('session_id')
+                
+                # Log what we extracted
+                logger.info(f"[SOCIAL_DEBUG] Extracted from task dict - content: {content[:100] if content else 'None'}...")
+                logger.info(f"[SOCIAL_DEBUG] Caption: {caption[:100] if caption else 'None'}...")
+                logger.info(f"[SOCIAL_DEBUG] Session ID: {session_id}")
+            
+            # Validate we have actual content, not just the instruction
+            if content and (content.startswith("Schedule and publish") or content.startswith("Publish")):
+                logger.warning(f"[SOCIAL_DEBUG] Content appears to be an instruction, not actual content: {content[:100]}")
+                # Try to get from state manager if we have session_id
+                if session_id:
+                    from agent_state_manager import state_manager
+                    stored_content = state_manager.get_agent_output(session_id, "content_writer")
+                    if stored_content:
+                        logger.info(f"[SOCIAL_DEBUG] Retrieved content from state manager: {stored_content[:100]}...")
+                        content = stored_content
+            
             # Publish content using the main agent with auto-detection
             result = await main_agent.publish_content(
-                content=task,  # Task contains the content to publish
+                content=content,
+                caption=caption,
+                session_id=session_id,
+                task=task if isinstance(task, str) else task.get('task', ''),
                 request_id=request_id
             )
             

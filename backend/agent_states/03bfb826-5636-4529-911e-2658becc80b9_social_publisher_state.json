@@ -1,0 +1,17 @@
+{
+  "state_id": "03bfb826-5636-4529-911e-2658becc80b9_social_publisher_f08f322b",
+  "session_id": "03bfb826-5636-4529-911e-2658becc80b9",
+  "agent_id": "social_publisher",
+  "output": "Successfully published to Instagram. https://instagram.com/p/17904859659244930",
+  "metadata": {
+    "agent_name": "Social Media Publisher",
+    "team_id": "marketing",
+    "team_name": "Marketing",
+    "task": "Schedule and publish the caption on Instagram.",
+    "request_id": "03bfb826-5636-4529-911e-2658becc80b9",
+    "execution_mode": "individual_endpoint",
+    "had_previous_output": false
+  },
+  "timestamp": "2026-04-30T08:26:48.217325+00:00",
+  "state_type": "agent_output"
+}

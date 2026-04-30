@@ -1,4 +1,125 @@
-2026-04-29 18:19:51,888 - __main__ - ERROR - Server startup failed: No module named 'ceo_orchestration_routes'
+2026-04-30 08:36:38,691 - ai_service - ERROR - Content generation failed: Provider '53ea1ce2-9530-47f1-aee7-5edef9600cc4' not found. Available providers: ['gemini', 'groq', 'openai_router']
+2026-04-30 08:36:38,692 - ceo_agent_planner - ERROR - Agent analysis failed: Content generation failed: Provider '53ea1ce2-9530-47f1-aee7-5edef9600cc4' not found. Available providers: ['gemini', 'groq', 'openai_router']
+2026-04-30 08:59:36,159 - ai_service - ERROR - Content generation failed: Provider '4ef90a92-f31e-435d-a579-1f03ced6eb67' not found. Available providers: ['gemini', 'groq', 'openai_router']
+2026-04-30 08:59:36,160 - ceo_agent_planner - ERROR - Agent analysis failed: Content generation failed: Provider '4ef90a92-f31e-435d-a579-1f03ced6eb67' not found. Available providers: ['gemini', 'groq', 'openai_router']
+2026-04-30 10:25:32,510 - social_media_publisher.sub_agents.instagram - ERROR - Failed to publish media container: 400 Client Error: Bad Request for url: https://graph.facebook.com/v18.0/17841439653964722/media_publish
+2026-04-30 10:25:32,512 - social_media_publisher.sub_agents.instagram - ERROR - Instagram Graph API publishing failed: Publishing failed: 400 Client Error: Bad Request for url: https://graph.facebook.com/v18.0/17841439653964722/media_publish
+2026-04-30 11:10:09,540 - ai_providers.groq_provider - ERROR - Groq content generation failed: Client error '429 Too Many Requests' for url 'https://api.groq.com/openai/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-30 11:10:09,541 - ai_providers.groq_provider - ERROR - Groq health check failed: Client error '429 Too Many Requests' for url 'https://api.groq.com/openai/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-30 11:10:09,542 - content_writer_v2.main_agent - ERROR - Failed to initialize Content Writer Main Agent: groq provider failed health check
+2026-04-30 11:10:09,542 - utils - ERROR - Content Writer v2 execution failed for request 5399f4a0-b26f-434a-a02a-777df6f2f3bd: groq provider failed health check
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 131, in execute_agent_real
+    await main_agent.initialize()
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\content_writer_v2\main_agent.py", line 58, in initialize
+    raise AIProviderError(f"{self.config.ai_provider.provider} provider failed health check")
+ai_providers.exceptions.AIProviderError: groq provider failed health check
+2026-04-30 11:10:09,549 - agent_routes - ERROR - Agent execution failed for content_writer: groq provider failed health check
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\agent_routes.py", line 207, in execute_agent
+    output = await execute_agent_real(agent_id, task, request_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 171, in execute_agent_real
+    raise e
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 131, in execute_agent_real
+    await main_agent.initialize()
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\content_writer_v2\main_agent.py", line 58, in initialize
+    raise AIProviderError(f"{self.config.ai_provider.provider} provider failed health check")
+ai_providers.exceptions.AIProviderError: groq provider failed health check
+2026-04-30 11:10:12,423 - ai_providers.groq_provider - ERROR - Groq content generation failed: Client error '429 Too Many Requests' for url 'https://api.groq.com/openai/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-30 11:10:12,424 - ai_providers.groq_provider - ERROR - Groq health check failed: Client error '429 Too Many Requests' for url 'https://api.groq.com/openai/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-04-30 11:10:12,425 - social_media_publisher.sub_agents.base - ERROR - Failed to initialize InstagramAgent: groq provider failed health check
+2026-04-30 11:10:12,425 - social_media_publisher.main_agent - ERROR - Content publishing failed for request 19eec835-5f2b-49ce-aac1-3a1c325e79d2: groq provider failed health check
+2026-04-30 11:10:12,426 - utils - ERROR - Social Media Publisher execution failed for request 19eec835-5f2b-49ce-aac1-3a1c325e79d2: Content publishing failed: groq provider failed health check
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 174, in publish_content
+    platform_result = await self._publish_to_platform(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 334, in _publish_to_platform
+    agent = await self._get_platform_agent(platform)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 363, in _get_platform_agent
+    self._sub_agents[platform] = await SocialMediaAgentFactory.create_agent(
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\factory.py", line 76, in create_agent
+    await agent.initialize()
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\sub_agents\base.py", line 71, in initialize
+    raise AIProviderError(f"{self.config.ai_provider.provider} provider failed health check")
+ai_providers.exceptions.AIProviderError: groq provider failed health check
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 189, in execute_agent_real
+    result = await main_agent.publish_content(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 272, in publish_content
+    raise AIProviderError(f"Content publishing failed: {str(e)}")
+ai_providers.exceptions.AIProviderError: Content publishing failed: groq provider failed health check
+2026-04-30 11:10:12,434 - agent_routes - ERROR - Agent execution failed for social_publisher: Content publishing failed: groq provider failed health check
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 174, in publish_content
+    platform_result = await self._publish_to_platform(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<12 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 334, in _publish_to_platform
+    agent = await self._get_platform_agent(platform)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 363, in _get_platform_agent
+    self._sub_agents[platform] = await SocialMediaAgentFactory.create_agent(
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\factory.py", line 76, in create_agent
+    await agent.initialize()
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\sub_agents\base.py", line 71, in initialize
+    raise AIProviderError(f"{self.config.ai_provider.provider} provider failed health check")
+ai_providers.exceptions.AIProviderError: groq provider failed health check
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\agent_routes.py", line 207, in execute_agent
+    output = await execute_agent_real(agent_id, task, request_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 243, in execute_agent_real
+    raise e
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\utils.py", line 189, in execute_agent_real
+    result = await main_agent.publish_content(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\social_media_publisher\main_agent.py", line 272, in publish_content
+    raise AIProviderError(f"Content publishing failed: {str(e)}")
+ai_providers.exceptions.AIProviderError: Content publishing failed: groq provider failed health check
+2026-04-30 15:10:19,655 - asyncio - ERROR - Exception in callback _ProactorBasePipeTransport._call_connection_lost()
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost()>
+Traceback (most recent call last):
+  File "C:\Program Files\Python313\Lib\asyncio\events.py", line 89, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+2026-04-30 16:17:32,727 - __main__ - ERROR - Server startup failed: cannot import name 'simple_agent_router' from 'simple_agent_routes' (C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\simple_agent_routes.py)
 Traceback (most recent call last):
   File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
     uvicorn.run(
@@ -10,10 +131,10 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\main.py", line 587, in run
     server.run()
     ~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\server.py", line 61, in run
     return asyncio.run(self.serve(sockets=sockets))
            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
@@ -25,15 +146,13 @@ Traceback (most recent call last):
   File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
     return future.result()
            ~~~~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\server.py", line 68, in serve
     config.load()
     ~~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\config.py", line 467, in load
     self.loaded_app = import_from_string(self.app)
                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 24, in import_from_string
-    raise exc from None
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\importer.py", line 21, in import_from_string
     module = importlib.import_module(module_str)
   File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
     return _bootstrap._gcd_import(name[level:], package, level)
@@ -44,10 +163,10 @@ Traceback (most recent call last):
   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 18, in <module>
-    from ceo_orchestration_routes import ceo_router
-ModuleNotFoundError: No module named 'ceo_orchestration_routes'
-2026-04-29 18:59:37,823 - __main__ - ERROR - Server startup failed: name 'Dict' is not defined
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 17, in <module>
+    from simple_agent_routes import simple_agent_router
+ImportError: cannot import name 'simple_agent_router' from 'simple_agent_routes' (C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\simple_agent_routes.py). Did you mean: 'simple_content_writer'?
+2026-04-30 16:18:12,881 - __main__ - ERROR - Server startup failed: cannot import name 'simple_agent_router' from 'simple_agent_routes' (C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\simple_agent_routes.py)
 Traceback (most recent call last):
   File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\run_backend.py", line 96, in main
     uvicorn.run(
@@ -59,10 +178,10 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\main.py", line 587, in run
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\main.py", line 587, in run
     server.run()
     ~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 61, in run
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\server.py", line 61, in run
     return asyncio.run(self.serve(sockets=sockets))
            ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Program Files\Python313\Lib\asyncio\runners.py", line 195, in run
@@ -74,13 +193,13 @@ Traceback (most recent call last):
   File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
     return future.result()
            ~~~~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\server.py", line 68, in serve
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\server.py", line 68, in serve
     config.load()
     ~~~~~~~~~~~^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\config.py", line 467, in load
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\config.py", line 467, in load
     self.loaded_app = import_from_string(self.app)
                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 21, in import_from_string
+  File "C:\Users\adachaud\AppData\Roaming\Python\Python313\site-packages\uvicorn\importer.py", line 21, in import_from_string
     module = importlib.import_module(module_str)
   File "C:\Program Files\Python313\Lib\importlib\__init__.py", line 88, in import_module
     return _bootstrap._gcd_import(name[level:], package, level)
@@ -91,15 +210,6 @@ Traceback (most recent call last):
   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 14, in <module>
-    from routes import api_router
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\routes.py", line 6, in <module>
-    from models import OrchestrateRequest, OrchestrateResponse, StepLog, AgentRun
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 104, in <module>
-    class CEOOrchestrationResponse(BaseModel):
-    ...<10 lines>...
-        metadata: Optional[dict] = None
-  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\models.py", line 114, in CEOOrchestrationResponse
-    learning_applied: Optional[Dict[str, Any]] = None
-                               ^^^^
-NameError: name 'Dict' is not defined. Did you mean: 'dict'?
+  File "C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\server.py", line 17, in <module>
+    from simple_agent_routes import simple_agent_router
+ImportError: cannot import name 'simple_agent_router' from 'simple_agent_routes' (C:\Users\adachaud\Downloads\CodeXAI\projects\startup-os\backend\simple_agent_routes.py). Did you mean: 'simple_content_writer'?

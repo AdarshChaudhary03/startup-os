@@ -17,6 +17,7 @@ from models import (
 from ai_service import ai_service
 from logging_config import log_orchestration_event
 from exceptions import TaskValidationException
+from ceo_conversation_flow import ceo_conversation_flow, ConversationState
 
 # Create CEO requirements gathering router
 ceo_requirements_router = APIRouter(prefix="/api/ceo/requirements")
@@ -34,6 +35,8 @@ class CEORequirementsGatherer:
     
     def __init__(self):
         self.learning_matrix = []
+        self.conversation_flow = ceo_conversation_flow
+        self.active_sessions = {}  # Track active conversation sessions
         self.clarification_patterns = {
             "purpose": [
                 "What is the main purpose of this task?",
@@ -229,43 +232,48 @@ Return your analysis in this JSON format:
         
         return analysis_data
     
-    async def generate_clarification_questions(self, missing_categories: List[Dict], task: str, request_id: str) -> List[str]:
-        """Generate specific clarification questions based on missing categories."""
+    async def generate_clarification_questions(self, missing_categories: List[Dict], task: str, request_id: str, strategy: str = "adaptive") -> List[Dict[str, Any]]:
+        """Generate specific clarification questions based on missing categories using conversation flow."""
         
-        questions = []
+        # Use conversation flow to generate questions
+        question_objects = self.conversation_flow.get_initial_questions(task, strategy)
         
-        # Ensure we have categories to work with
-        if not missing_categories:
-            # Generate default questions if no categories provided
-            questions = [
-                "What is the main goal of this task?",
-                "Who is your target audience?",
-                "What format would you prefer for the output?"
-            ]
-        else:
-            # Sort by importance (highest first)
-            sorted_categories = sorted(missing_categories, key=lambda x: x.get('importance', 0), reverse=True)
+        # If conversation flow doesn't generate enough questions, fall back to original logic
+        if len(question_objects) < 3:
+            questions = []
             
-            # Limit to top 3-5 most important questions to avoid overwhelming user
-            for category in sorted_categories[:5]:
-                category_name = category.get('category', '')
-                category_questions = category.get('questions', [])
+            # Ensure we have categories to work with
+            if not missing_categories:
+                # Generate default questions if no categories provided
+                questions = [
+                    "What is the main goal of this task?",
+                    "Who is your target audience?",
+                    "What format would you prefer for the output?"
+                ]
+            else:
+                # Sort by importance (highest first)
+                sorted_categories = sorted(missing_categories, key=lambda x: x.get('importance', 0), reverse=True)
                 
-                if category_questions:
-                    # Use questions from the analysis
-                    questions.extend(category_questions)
-                elif category_name in self.clarification_patterns:
-                    # Use predefined patterns
-                    pattern_questions = self.clarification_patterns[category_name]
-                    questions.extend(pattern_questions[:1])  # Take first question from pattern
-                else:
-                    # Generate a generic question for unknown categories
-                    questions.append(f"Can you provide more details about the {category_name}?")
-        
-        # If we still don't have enough questions, generate more using AI
-        if len(questions) < 2:
-            try:
-                context_prompt = f"""
+                # Limit to top 3-5 most important questions to avoid overwhelming user
+                for category in sorted_categories[:5]:
+                    category_name = category.get('category', '')
+                    category_questions = category.get('questions', [])
+                    
+                    if category_questions:
+                        # Use questions from the analysis
+                        questions.extend(category_questions)
+                    elif category_name in self.clarification_patterns:
+                        # Use predefined patterns
+                        pattern_questions = self.clarification_patterns[category_name]
+                        questions.extend(pattern_questions[:1])  # Take first question from pattern
+                    else:
+                        # Generate a generic question for unknown categories
+                        questions.append(f"Can you provide more details about the {category_name}?")
+            
+            # If we still don't have enough questions, generate more using AI
+            if len(questions) < 2:
+                try:
+                    context_prompt = f"""
 Based on this task: "{task}"
 
 Generate 3 specific clarification questions that would help create better requirements. Focus on:
@@ -275,39 +283,58 @@ Generate 3 specific clarification questions that would help create better requir
 
 Return only the questions, one per line:
 """
-                
-                additional_questions_response = await ai_service.generate_content(context_prompt, request_id)
-                additional_questions = [q.strip() for q in additional_questions_response.split('\n') if q.strip() and '?' in q]
-                questions.extend(additional_questions)
-                
-            except Exception as e:
-                logger.warning(f"Failed to generate additional questions: {e}")
-                # Add fallback questions if AI fails
-                fallback_questions = [
-                    "What specific outcome are you looking for?",
-                    "Are there any constraints or requirements I should know about?",
-                    "When do you need this completed?"
-                ]
-                questions.extend(fallback_questions)
-        
-        # Remove duplicates and limit to 5 questions
-        unique_questions = list(dict.fromkeys(questions))[:5]
+                    
+                    additional_questions_response = await ai_service.generate_content(context_prompt, request_id)
+                    additional_questions = [q.strip() for q in additional_questions_response.split('\n') if q.strip() and '?' in q]
+                    questions.extend(additional_questions)
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to generate additional questions: {e}")
+                    # Add fallback questions if AI fails
+                    fallback_questions = [
+                        "What specific outcome are you looking for?",
+                        "Are there any constraints or requirements I should know about?",
+                        "When do you need this completed?"
+                    ]
+                    questions.extend(fallback_questions)
+            
+            # Remove duplicates and limit to 5 questions
+            unique_questions = list(dict.fromkeys(questions))[:5]
+            
+            # Convert to question objects format
+            question_objects = [
+                {
+                    "id": f"q_{i+1}",
+                    "question": q,
+                    "area": "general",
+                    "type": "primary",
+                    "required": i < 2  # First 2 questions are required
+                }
+                for i, q in enumerate(unique_questions)
+            ]
         
         # Ensure we always have at least one question
-        if not unique_questions:
-            unique_questions = ["Can you provide more details about what you're trying to achieve?"]
+        if not question_objects:
+            question_objects = [{
+                "id": "q_default",
+                "question": "Can you provide more details about what you're trying to achieve?",
+                "area": "general",
+                "type": "primary",
+                "required": True
+            }]
         
         log_orchestration_event(
             request_id=request_id,
             event_type="ceo_clarification_questions_generated",
-            message=f"CEO generated {len(unique_questions)} clarification questions",
+            message=f"CEO generated {len(question_objects)} clarification questions using {strategy} strategy",
             additional_data={
-                "questions_count": len(unique_questions),
+                "questions_count": len(question_objects),
+                "strategy": strategy,
                 "categories_addressed": [cat.get('category', 'unknown') for cat in missing_categories[:5]] if missing_categories else ["default"]
             }
         )
         
-        return unique_questions
+        return question_objects
     
     async def polish_requirements(self, original_task: str, clarifications: Dict[str, str], request_id: str) -> Dict[str, Any]:
         """Polish the original task into clear requirements based on clarifications."""
@@ -537,10 +564,13 @@ async def start_requirements_gathering(req: CEORequirementsRequest, request: Req
             timestamp=datetime.now(timezone.utc).isoformat()
         )
     
-    # Generate clarification questions
-    questions = await ceo_requirements_gatherer.generate_clarification_questions(
+    # Generate clarification questions using conversation flow
+    question_objects = await ceo_requirements_gatherer.generate_clarification_questions(
         analysis.get("missing_categories", []), task, request_id
     )
+    
+    # Convert question objects to list of strings for backward compatibility
+    questions = [q["question"] for q in question_objects]
     
     return CEORequirementsResponse(
         session_id=session_id,

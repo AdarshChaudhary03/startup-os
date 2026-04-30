@@ -1,0 +1,32 @@
+{
+  "name": "frontend-state-management-tests",
+  "version": "1.0.0",
+  "description": "Test suite for frontend state management and logging",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/setupTests.js"],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/../$1"
+    },
+    "transform": {
+      "^.+\\.(js|jsx)$": "babel-jest"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.test.js",
+      "**/__tests__/**/*.test.jsx"
+    ],
+    "collectCoverageFrom": [
+      "../store/**/*.js",
+      "../middleware/**/*.js",
+      "../services/**/*.js",
+      "../components/FlowVisibility.jsx",
+      "!**/__tests__/**",
+      "!**/node_modules/**"
+    ]
+  }
+}

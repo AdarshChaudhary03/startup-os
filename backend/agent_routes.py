@@ -9,6 +9,7 @@ from data import TEAMS
 from utils import find_agent_by_id, execute_task_dummy, execute_agent_real
 from logging_config import log_orchestration_event
 from exceptions import AgentNotFoundException, TaskValidationException
+from agent_state_manager import state_manager
 
 # Create agent router
 agent_router = APIRouter(prefix="/api/agents")
@@ -16,131 +17,131 @@ agent_router = APIRouter(prefix="/api/agents")
 # Initialize logger
 logger = logging.getLogger(__name__)
 
+# IMPORTANT: Using single standardized endpoint format (underscore) for each agent
+# This matches what orchestration returns and avoids confusion
 
-@agent_router.post("/content-writer", response_model=AgentExecutionResponse)
+
+@agent_router.post("/content_writer", response_model=AgentExecutionResponse)
 async def execute_content_writer(req: AgentExecutionRequest, request: Request):
     """Execute Content Writer Agent with real LLM integration."""
     return await execute_agent("content_writer", req, request)
 
 
-@agent_router.post("/social-media-publisher", response_model=AgentExecutionResponse)
-async def execute_social_media_publisher(req: AgentExecutionRequest, request: Request):
+@agent_router.post("/social_publisher", response_model=AgentExecutionResponse)
+async def execute_social_publisher(req: AgentExecutionRequest, request: Request):
     """Execute Social Media Publisher Agent with real platform integration."""
     return await execute_agent("social_publisher", req, request)
 
 
-@agent_router.post("/social-publisher", response_model=AgentExecutionResponse)
-async def execute_social_publisher(req: AgentExecutionRequest, request: Request):
-    """Execute Social Media Publisher Agent with real platform integration (legacy endpoint)."""
-    return await execute_agent("social_publisher", req, request)
-
-
-@agent_router.post("/seo-specialist", response_model=AgentExecutionResponse)
+@agent_router.post("/seo_specialist", response_model=AgentExecutionResponse)
 async def execute_seo_specialist(req: AgentExecutionRequest, request: Request):
     """Execute SEO Specialist Agent."""
     return await execute_agent("seo_specialist", req, request)
 
 
-@agent_router.post("/ad-copywriter", response_model=AgentExecutionResponse)
+@agent_router.post("/ad_copywriter", response_model=AgentExecutionResponse)
 async def execute_ad_copywriter(req: AgentExecutionRequest, request: Request):
     """Execute Ad Copywriter Agent."""
     return await execute_agent("ad_copywriter", req, request)
 
 
-@agent_router.post("/analytics-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/analytics_agent", response_model=AgentExecutionResponse)
 async def execute_analytics_agent(req: AgentExecutionRequest, request: Request):
     """Execute Analytics Agent."""
     return await execute_agent("analytics_agent", req, request)
 
 
-@agent_router.post("/frontend-engineer", response_model=AgentExecutionResponse)
+@agent_router.post("/frontend_engineer", response_model=AgentExecutionResponse)
 async def execute_frontend_engineer(req: AgentExecutionRequest, request: Request):
     """Execute Frontend Engineer Agent."""
     return await execute_agent("frontend_engineer", req, request)
 
 
-@agent_router.post("/backend-engineer", response_model=AgentExecutionResponse)
+@agent_router.post("/backend_engineer", response_model=AgentExecutionResponse)
 async def execute_backend_engineer(req: AgentExecutionRequest, request: Request):
     """Execute Backend Engineer Agent."""
     return await execute_agent("backend_engineer", req, request)
 
 
-@agent_router.post("/devops-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/devops_agent", response_model=AgentExecutionResponse)
 async def execute_devops_agent(req: AgentExecutionRequest, request: Request):
     """Execute DevOps Agent."""
     return await execute_agent("devops_agent", req, request)
 
 
-@agent_router.post("/qa-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/qa_agent", response_model=AgentExecutionResponse)
 async def execute_qa_agent(req: AgentExecutionRequest, request: Request):
     """Execute QA Agent."""
     return await execute_agent("qa_agent", req, request)
 
 
-@agent_router.post("/architect-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/architect_agent", response_model=AgentExecutionResponse)
 async def execute_architect_agent(req: AgentExecutionRequest, request: Request):
     """Execute Architect Agent."""
     return await execute_agent("architect_agent", req, request)
 
 
-@agent_router.post("/lead-researcher", response_model=AgentExecutionResponse)
+@agent_router.post("/lead_researcher", response_model=AgentExecutionResponse)
 async def execute_lead_researcher(req: AgentExecutionRequest, request: Request):
     """Execute Lead Researcher Agent."""
     return await execute_agent("lead_researcher", req, request)
 
 
-@agent_router.post("/outreach-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/outreach_agent", response_model=AgentExecutionResponse)
 async def execute_outreach_agent(req: AgentExecutionRequest, request: Request):
     """Execute Outreach Agent."""
     return await execute_agent("outreach_agent", req, request)
 
 
-@agent_router.post("/demo-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/demo_agent", response_model=AgentExecutionResponse)
 async def execute_demo_agent(req: AgentExecutionRequest, request: Request):
     """Execute Demo Agent."""
     return await execute_agent("demo_agent", req, request)
 
 
-@agent_router.post("/negotiator-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/negotiator_agent", response_model=AgentExecutionResponse)
 async def execute_negotiator_agent(req: AgentExecutionRequest, request: Request):
     """Execute Negotiator Agent."""
     return await execute_agent("negotiator_agent", req, request)
 
 
-@agent_router.post("/crm-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/crm_agent", response_model=AgentExecutionResponse)
 async def execute_crm_agent(req: AgentExecutionRequest, request: Request):
     """Execute CRM Agent."""
     return await execute_agent("crm_agent", req, request)
 
 
-@agent_router.post("/user-researcher", response_model=AgentExecutionResponse)
+@agent_router.post("/user_researcher", response_model=AgentExecutionResponse)
 async def execute_user_researcher(req: AgentExecutionRequest, request: Request):
     """Execute User Researcher Agent."""
     return await execute_agent("user_researcher", req, request)
 
 
-@agent_router.post("/pm-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/pm_agent", response_model=AgentExecutionResponse)
 async def execute_pm_agent(req: AgentExecutionRequest, request: Request):
     """Execute PM Agent."""
     return await execute_agent("pm_agent", req, request)
 
 
-@agent_router.post("/designer-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/designer_agent", response_model=AgentExecutionResponse)
 async def execute_designer_agent(req: AgentExecutionRequest, request: Request):
     """Execute Designer Agent."""
     return await execute_agent("designer_agent", req, request)
 
 
-@agent_router.post("/roadmap-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/roadmap_agent", response_model=AgentExecutionResponse)
 async def execute_roadmap_agent(req: AgentExecutionRequest, request: Request):
     """Execute Roadmap Agent."""
     return await execute_agent("roadmap_agent", req, request)
 
 
-@agent_router.post("/feedback-agent", response_model=AgentExecutionResponse)
+@agent_router.post("/feedback_agent", response_model=AgentExecutionResponse)
 async def execute_feedback_agent(req: AgentExecutionRequest, request: Request):
     """Execute Feedback Agent."""
     return await execute_agent("feedback_agent", req, request)
+
+
+
 
 
 async def execute_agent(agent_id: str, req: AgentExecutionRequest, request: Request) -> AgentExecutionResponse:
@@ -187,9 +188,84 @@ async def execute_agent(agent_id: str, req: AgentExecutionRequest, request: Requ
     )
     
     try:
+        # Get session ID from request headers or generate new one
+        session_id = request.headers.get('X-Session-ID', request_id)
+        
+        # Check if this is part of an orchestration and get previous agent output
+        previous_output = None
+        if 'X-Agent-Chain' in request.headers:
+            # This agent is part of a chain, try to get previous output
+            previous_output = state_manager.get_previous_agent_output(
+                session_id=session_id,
+                current_agent_id=agent_id
+            )
+            if previous_output:
+                logger.info(f"Retrieved previous agent output for {agent_id} in session {session_id}")
+        
         # Execute the agent task using real agent execution
         from utils import execute_agent_real
-        output = await execute_agent_real(agent_id, task, request_id)
+        
+        # For social_publisher, pass the entire request body to handle caption and context
+        if agent_id in ["social_publisher", "social-media-publisher", "social_media_publisher"]:
+            # Pass the full request body which includes caption, content, and context
+            # Extract caption from context if available
+            caption = req.caption
+            if not caption and req.context:
+                # Try to extract caption from context
+                if isinstance(req.context, dict):
+                    caption = req.context.get('caption') or req.context.get('content_writer_output')
+                elif isinstance(req.context, str):
+                    try:
+                        import json
+                        context_dict = json.loads(req.context)
+                        caption = context_dict.get('caption') or context_dict.get('content_writer_output')
+                    except:
+                        pass
+            
+            # Build the request data with proper caption
+            request_data = {
+                "task": req.task,
+                "caption": caption or req.content or task,
+                "content": caption or req.content or task,
+                "context": req.context,
+                "metadata": req.metadata,
+                "session_id": session_id
+            }
+            output = await execute_agent_real(agent_id, request_data, request_id)
+        else:
+            output = await execute_agent_real(agent_id, task, request_id)
+        
+        # Save agent output to state manager
+        # For Content Writer, extract the actual content from the structured response
+        output_to_save = output
+        if agent_id == "content_writer" and isinstance(output, str):
+            # Try to parse the output if it's a JSON string
+            try:
+                import json
+                parsed_output = json.loads(output)
+                if isinstance(parsed_output, dict) and "content" in parsed_output:
+                    # Save the actual generated content
+                    output_to_save = parsed_output["content"]
+                    logger.info(f"Extracted content from Content Writer structured response")
+            except:
+                # If parsing fails, use the output as-is
+                pass
+        
+        state_manager.save_agent_output(
+            session_id=session_id,
+            agent_id=agent_id,
+            output=output_to_save,
+            metadata={
+                "agent_name": agent["name"],
+                "team_id": team_id,
+                "team_name": team_name,
+                "task": task,
+                "request_id": request_id,
+                "execution_mode": "individual_endpoint",
+                "had_previous_output": previous_output is not None
+            }
+        )
+        logger.info(f"Saved {agent['name']} output to state manager for session {session_id}")
         
         # Calculate duration
         duration_ms = int((datetime.now(timezone.utc) - started).total_seconds() * 1000)
@@ -204,7 +280,9 @@ async def execute_agent(agent_id: str, req: AgentExecutionRequest, request: Requ
                 "duration_ms": duration_ms,
                 "output_preview": output[:100] + "..." if len(output) > 100 else output,
                 "execution_mode": "individual_endpoint",
-                "success": True
+                "success": True,
+                "session_id": session_id,
+                "state_saved": True
             }
         )
         
@@ -264,7 +342,8 @@ async def list_agents():
     
     for team in TEAMS:
         for agent in team["agents"]:
-            endpoint_path = f"/api/agents/{agent['id'].replace('_', '-')}"
+            # Single standardized endpoint using underscore format
+            endpoint_path = f"/api/agents/{agent['id']}"
             agents_list.append({
                 "agent_id": agent["id"],
                 "agent_name": agent["name"],

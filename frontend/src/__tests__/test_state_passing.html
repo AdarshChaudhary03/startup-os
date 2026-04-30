@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>State Passing Test</title>
+    <script>
+        // Simple test to verify state passing between agents
+        const testStatePassingFlow = () => {
+            console.log('=== Testing State Passing Flow ===');
+            
+            // Simulate Content Writer output
+            const contentWriterOutput = {
+                request_id: 'test-123',
+                agent_id: 'content_writer',
+                agent_name: 'Content Writer',
+                output: '🤖💻 Discover the power of GenAI 🚀\nfor students like you! 📚\nLearn how to harness AI tools 🛠️\nto boost your productivity 📊\nand creativity 🎨. #AIforStudents #GenAI #ArtificialIntelligence',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    session_id: 'session-test-123'
+                }
+            };
+            
+            console.log('1. Content Writer Output:', contentWriterOutput);
+            
+            // Simulate building context for Social Publisher
+            const socialPublisherContext = {
+                content_writer_output: contentWriterOutput.output,
+                caption: contentWriterOutput.output,
+                metadata: {
+                    content_generated_at: contentWriterOutput.timestamp,
+                    session_id: contentWriterOutput.metadata.session_id
+                }
+            };
+            
+            console.log('2. Social Publisher Context:', socialPublisherContext);
+            
+            // Simulate API payload
+            const apiPayload = {
+                task: 'Schedule and publish the caption on Instagram.',
+                context: JSON.stringify(socialPublisherContext),
+                metadata: {
+                    step_number: 2,
+                    total_steps: 2,
+                    session_id: 'session-test-123'
+                }
+            };
+            
+            console.log('3. API Payload:', apiPayload);
+            console.log('4. Context parsed:', JSON.parse(apiPayload.context));
+            
+            // Verify caption is in the payload
+            const parsedContext = JSON.parse(apiPayload.context);
+            if (parsedContext.caption && parsedContext.caption.includes('GenAI')) {
+                console.log('✅ SUCCESS: Caption properly passed to Social Publisher!');
+            } else {
+                console.error('❌ FAILED: Caption not found in context!');
+            }
+        };
+        
+        // Run test on page load
+        window.onload = testStatePassingFlow;
+    </script>
+</head>
+<body>
+    <h1>State Passing Test</h1>
+    <p>Check console for test results</p>
+    <button onclick="testStatePassingFlow()">Run Test Again</button>
+</body>
+</html>

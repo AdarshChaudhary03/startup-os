@@ -77,7 +77,7 @@ class SocialMediaConfig:
     default_platform: SocialPlatform = SocialPlatform.INSTAGRAM
     include_hashtags: bool = True
     max_hashtags: int = 30
-    include_emojis: bool = True
+    include_emojis: bool = False  # Changed to False for text-only content
     include_call_to_action: bool = True
     character_limits: Dict[SocialPlatform, int] = field(default_factory=lambda: {
         SocialPlatform.INSTAGRAM: 2200,
@@ -201,7 +201,7 @@ INSTAGRAM_CONFIG = ContentWriterV2Config(
         default_platform=SocialPlatform.INSTAGRAM,
         include_hashtags=True,
         max_hashtags=30,
-        include_emojis=True
+        include_emojis=False  # Changed to False for text-only content
     )
 )
 

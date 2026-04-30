@@ -1,0 +1,17 @@
+{
+  "state_id": "fc71443a-0829-4175-9c09-81a124f6821c_social_publisher_c01ede2c",
+  "session_id": "fc71443a-0829-4175-9c09-81a124f6821c",
+  "agent_id": "social_publisher",
+  "output": "Successfully published to Instagram. https://instagram.com/p/17953607567965054",
+  "metadata": {
+    "agent_name": "Social Media Publisher",
+    "team_id": "marketing",
+    "team_name": "Marketing",
+    "task": "Schedule and publish the caption on Instagram at an optimal time for maximum engagement.",
+    "request_id": "fc71443a-0829-4175-9c09-81a124f6821c",
+    "execution_mode": "individual_endpoint",
+    "had_previous_output": false
+  },
+  "timestamp": "2026-04-30T05:42:12.844360+00:00",
+  "state_type": "agent_output"
+}

@@ -23,6 +23,7 @@ from ai_providers.factory import AIProviderFactory
 from ai_providers.base import AIResponse
 from ai_providers.exceptions import AIProviderError
 from logging_config import log_orchestration_event
+from agent_state_manager import state_manager
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,9 @@ class SocialMediaPublisherMainAgent:
         schedule_time: Optional[datetime] = None,
         target_audience: Optional[str] = None,
         additional_params: Optional[Dict[str, Any]] = None,
+        session_id: Optional[str] = None,
+        task: Optional[str] = None,  # Add task parameter
+        caption: Optional[str] = None,  # Add caption parameter
         **kwargs
     ) -> Dict[str, Any]:
         """Publish content to social media platform(s).
@@ -102,6 +106,51 @@ class SocialMediaPublisherMainAgent:
         """
         if not self._initialized:
             await self.initialize()
+        
+        # Enhanced content retrieval logic
+        logger.debug(f"[SOCIAL_DEBUG] Initial content: {content[:200] if content else 'None'}...")
+        logger.debug(f"[SOCIAL_DEBUG] Task parameter: {task[:200] if task else 'None'}...")
+        logger.debug(f"[SOCIAL_DEBUG] Caption parameter: {caption[:200] if caption else 'None'}...")
+        logger.debug(f"[SOCIAL_DEBUG] Session ID: {session_id}")
+        
+        # Priority 1: Use caption parameter if provided (from CEO agent)
+        if caption and caption != content:
+            logger.info(f"[SOCIAL_DEBUG] Using caption parameter as content")
+            content = caption
+        # Priority 2: Check state manager for Content Writer output
+        elif session_id:
+            # Try to get content from Content Writer agent output
+            logger.debug(f"[SOCIAL_DEBUG] Attempting to retrieve Content Writer output from state manager")
+            content_writer_output = state_manager.get_agent_output(session_id, "content_writer")
+            if content_writer_output:
+                logger.info(f"[SOCIAL_DEBUG] Retrieved content from Content Writer via state manager for session {session_id}")
+                # Use the actual generated content instead of the instruction
+                content = content_writer_output
+                logger.info(f"[SOCIAL_DEBUG] Using generated content: {content[:200]}...")
+                
+                # Also try to extract hashtags if they were generated separately
+                try:
+                    # Check if the content includes hashtags already
+                    if not hashtags and '#' in content:
+                        # Extract hashtags from the content
+                        import re
+                        extracted_hashtags = re.findall(r'#\w+', content)
+                        if extracted_hashtags:
+                            hashtags = [tag.strip('#') for tag in extracted_hashtags]
+                            logger.info(f"[SOCIAL_DEBUG] Extracted {len(hashtags)} hashtags from content")
+                except Exception as e:
+                    logger.warning(f"[SOCIAL_DEBUG] Failed to extract hashtags: {e}")
+            else:
+                logger.warning(f"[SOCIAL_DEBUG] No Content Writer output found in state manager for session {session_id}")
+                # Priority 3: Check if content parameter contains actual content (not instruction)
+                if content and len(content) > 50 and not content.startswith("Schedule") and not content.startswith("Publish"):
+                    logger.info(f"[SOCIAL_DEBUG] Using content parameter as it appears to be actual content")
+                # Priority 4: Check if task contains content
+                elif task and len(task) > 50 and not task.startswith("Schedule") and not task.startswith("Publish"):
+                    logger.info(f"[SOCIAL_DEBUG] Using task as content since it appears to be actual content")
+                    content = task
+        
+        logger.info(f"[SOCIAL_DEBUG] Final content to publish: {content[:200]}...")
         
         # Determine target platforms
         target_platforms = self._determine_target_platforms(platform, platforms, content)

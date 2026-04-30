@@ -228,17 +228,18 @@ class SocialMediaAgent(BaseContentAgent):
         # Platform-specific system prompts
         platform_prompts = {
             SocialPlatform.INSTAGRAM: f"""
-You are an expert Instagram content creator specializing in engaging, visually-appealing posts.
+You are an expert Instagram content creator specializing in engaging, text-only posts.
 
 Create Instagram content that:
 - Captures attention in the first few words
 - Uses line breaks for visual appeal and readability
-- Includes relevant emojis naturally (if requested)
-- Has a conversational, authentic tone
-- Encourages engagement (likes, comments, shares)
+- Uses ONLY plain text without emojis, symbols, or special characters
+- Has a conversational, authentic tone that relies on words, not emojis
+- Encourages engagement through compelling text and questions
 - Stays within {self.platform_limits[platform]} characters
 - Uses strategic hashtags for discovery (if requested)
 - Includes a clear call-to-action when appropriate
+- Focuses on strong, descriptive language instead of visual elements
 """,
             
             SocialPlatform.TWITTER: f"""
@@ -272,12 +273,14 @@ You are an expert Facebook content creator specializing in community-building po
 
 Create Facebook content that:
 - Builds community and encourages discussion
-- Uses a friendly, conversational tone
+- Uses a friendly, conversational tone with text-only content
+- Uses ONLY plain text without emojis or special characters
 - Includes relevant hashtags naturally (if requested)
-- Encourages shares and comments
+- Encourages shares and comments through compelling text
 - Can be longer and more detailed
-- Uses Facebook-specific features and language
+- Uses Facebook-specific language conventions
 - Includes engaging questions or prompts
+- Relies on strong, descriptive language for engagement
 """,
             
             SocialPlatform.TIKTOK: f"""
@@ -348,8 +351,12 @@ Create YouTube content that:
         if include_hashtags:
             requirements.append(f"Include {hashtag_count} relevant hashtags naturally integrated into the content")
         
-        if include_emojis and platform in [SocialPlatform.INSTAGRAM, SocialPlatform.FACEBOOK]:
-            requirements.append("Include relevant emojis to enhance engagement")
+        # Emoji generation is disabled for text-only content
+        if include_emojis:
+            logger.info(f"Emoji generation disabled for text-only content - request {request_id}")
+            requirements.append("IMPORTANT: Generate text-only content without emojis or special characters for clarity and accessibility")
+        else:
+            requirements.append("Generate clean, text-only content without emojis or special characters")
         
         if include_call_to_action:
             requirements.append("Include a clear, compelling call-to-action")
@@ -373,8 +380,9 @@ Create YouTube content that:
         prompt_parts.extend([f"- {req}" for req in requirements])
         
         prompt_parts.append(
-            "\nGenerate engaging, platform-optimized content that meets all requirements. "
-            "Focus on creating content that will perform well on the platform and engage the target audience."
+            "\nGenerate engaging, platform-optimized TEXT-ONLY content that meets all requirements. "
+            "Focus on creating compelling text content without emojis that will perform well on the platform and engage the target audience. "
+            "Use strong, descriptive language and compelling word choices instead of visual elements."
         )
         
         return "\n".join(prompt_parts)
@@ -577,9 +585,9 @@ Create YouTube content that:
         if any(word in content.lower() for word in ['you', 'your', 'comment', 'share', 'like']):
             score += 0.1  # Direct engagement prompts
         
-        # Emoji presence (simple check)
-        if any(ord(char) > 127 for char in content):  # Non-ASCII characters (likely emojis)
-            score += 0.05
+        # Text-only content engagement factors
+        # Removed emoji scoring since we're generating text-only content
+        # Focus on text-based engagement elements instead
         
         # Length optimization
         if 50 <= len(content) <= 200:  # Optimal length range

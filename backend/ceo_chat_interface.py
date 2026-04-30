@@ -1,512 +1,494 @@
-from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
-from typing import List, Dict, Any, Optional
+from typing import Dict, List, Any, Optional
 from datetime import datetime, timezone
 import uuid
 import logging
-import json
-import asyncio
+from enum import Enum
 
 from models import (
     CEORequirementsRequest,
     CEORequirementsResponse,
-    CEOClarificationRequest
+    CEOClarificationRequest,
+    CEOPolishedRequirement
 )
-from ceo_requirements_gathering import ceo_requirements_gatherer, requirements_sessions
-from ai_service import ai_service
-from logging_config import log_orchestration_event
-from exceptions import TaskValidationException
-
-# Create CEO chat interface router
-ceo_chat_router = APIRouter(prefix="/api/ceo/chat")
-
-# Initialize logger
-logger = logging.getLogger(__name__)
-
-# Active WebSocket connections for real-time chat
-active_connections: Dict[str, WebSocket] = {}
-chat_sessions: Dict[str, Dict[str, Any]] = {}
+from ceo_conversation_flow import ceo_conversation_flow, ConversationState
 
 
-class CEOChatManager:
-    """CEO Chat Manager for real-time conversation with users"""
+class ChatSessionState(Enum):
+    """States for chat session"""
+    INITIALIZING = "initializing"
+    ASKING_QUESTIONS = "asking_questions"
+    AWAITING_RESPONSE = "awaiting_response"
+    PROCESSING_RESPONSE = "processing_response"
+    CONFIRMING_REQUIREMENTS = "confirming_requirements"
+    FINALIZING = "finalizing"
+    COMPLETE = "complete"
+
+
+class CEOChatInterface:
+    """Interactive chat interface for CEO agent requirements gathering"""
     
     def __init__(self):
-        self.conversation_templates = {
-            "greeting": [
-                "Hello! I'm your CEO agent. I'm here to help you create clear, actionable requirements for your task.",
-                "Let's work together to understand exactly what you need so I can orchestrate the best team for the job.",
-                "What would you like to accomplish today?"
-            ],
-            "clarification_intro": [
-                "I need to understand your requirements better to ensure we deliver exactly what you need.",
-                "Let me ask you a few questions to clarify the details.",
-                "This will help me create the perfect plan and choose the right team members."
-            ],
-            "requirements_complete": [
-                "Excellent! I now have all the information I need.",
-                "Let me polish your requirements and create an execution plan.",
-                "I'll orchestrate the best team to deliver your project."
-            ],
-            "error_recovery": [
-                "I apologize for the confusion. Let me try a different approach.",
-                "Let's simplify this. Can you tell me in your own words what you're trying to achieve?",
-                "I'm here to help. What's the main goal of your project?"
-            ]
-        }
+        self.logger = logging.getLogger(__name__)
+        self.conversation_flow = ceo_conversation_flow
+        self.active_sessions: Dict[str, Dict[str, Any]] = {}
+        self.session_history: Dict[str, List[Dict[str, Any]]] = {}
     
-    async def connect(self, websocket: WebSocket, session_id: str):
-        """Accept WebSocket connection and initialize chat session"""
-        await websocket.accept()
-        active_connections[session_id] = websocket
+    def start_chat_session(self, task: str, user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Start a new chat session for requirements gathering"""
         
-        # Initialize chat session
-        chat_sessions[session_id] = {
+        session_id = str(uuid.uuid4())
+        request_id = str(uuid.uuid4())
+        
+        # Initialize session
+        session_data = {
             "session_id": session_id,
-            "connected_at": datetime.now(timezone.utc).isoformat(),
-            "conversation_history": [],
-            "current_state": "greeting",
-            "requirements_session_id": None,
-            "user_context": {},
-            "clarification_count": 0
+            "request_id": request_id,
+            "original_task": task,
+            "user_context": user_context or {},
+            "state": ChatSessionState.INITIALIZING,
+            "conversation_state": ConversationState.INITIAL,
+            "responses": {},
+            "questions_asked": [],
+            "current_question": None,
+            "question_count": 0,
+            "max_questions": 5,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        # Send greeting message
-        await self.send_ceo_message(session_id, {
-            "type": "greeting",
-            "message": "\n".join(self.conversation_templates["greeting"]),
-            "suggestions": [
-                "I need help with content creation",
-                "I want to launch a marketing campaign", 
-                "I need to create social media content",
-                "I have a specific project in mind"
-            ]
+        self.active_sessions[session_id] = session_data
+        self.session_history[session_id] = []
+        
+        # Log session start
+        self._log_chat_event(session_id, "session_started", {
+            "task": task,
+            "user_context": user_context
         })
         
-        logger.info(f"CEO chat session {session_id} connected")
-    
-    def disconnect(self, session_id: str):
-        """Handle WebSocket disconnection"""
-        if session_id in active_connections:
-            del active_connections[session_id]
+        # Generate initial greeting and questions
+        greeting = self._generate_greeting(task)
+        initial_questions = self.conversation_flow.get_initial_questions(task, "adaptive")
         
-        if session_id in chat_sessions:
-            chat_sessions[session_id]["disconnected_at"] = datetime.now(timezone.utc).isoformat()
+        # Update session with questions
+        session_data["state"] = ChatSessionState.ASKING_QUESTIONS
+        session_data["pending_questions"] = initial_questions
+        session_data["updated_at"] = datetime.now(timezone.utc).isoformat()
         
-        logger.info(f"CEO chat session {session_id} disconnected")
-    
-    async def send_ceo_message(self, session_id: str, message_data: Dict[str, Any]):
-        """Send message from CEO to user"""
-        if session_id not in active_connections:
-            return
-        
-        websocket = active_connections[session_id]
-        
-        # Add metadata
-        message_data.update({
-            "from": "ceo",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "session_id": session_id
-        })
-        
-        # Store in conversation history
-        if session_id in chat_sessions:
-            chat_sessions[session_id]["conversation_history"].append(message_data)
-        
-        try:
-            await websocket.send_text(json.dumps(message_data))
-        except Exception as e:
-            logger.error(f"Error sending message to {session_id}: {e}")
-            self.disconnect(session_id)
-    
-    async def handle_user_message(self, session_id: str, message: str):
-        """Handle incoming message from user"""
-        if session_id not in chat_sessions:
-            await self.send_ceo_message(session_id, {
-                "type": "error",
-                "message": "Session not found. Please refresh and try again."
-            })
-            return
-        
-        session = chat_sessions[session_id]
-        
-        # Store user message in conversation history
-        user_message_data = {
-            "from": "user",
-            "message": message,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+        return {
+            "session_id": session_id,
+            "greeting": greeting,
+            "initial_questions": initial_questions,
+            "state": session_data["state"].value,
+            "max_questions": session_data["max_questions"]
         }
-        session["conversation_history"].append(user_message_data)
-        
-        # Process message based on current state
-        current_state = session["current_state"]
-        
-        try:
-            if current_state == "greeting":
-                await self._handle_initial_task(session_id, message)
-            elif current_state == "clarification":
-                await self._handle_clarification_response(session_id, message)
-            elif current_state == "requirements_review":
-                await self._handle_requirements_review(session_id, message)
-            else:
-                await self._handle_general_conversation(session_id, message)
-        
-        except Exception as e:
-            logger.error(f"Error handling user message in session {session_id}: {e}")
-            await self.send_ceo_message(session_id, {
-                "type": "error",
-                "message": "I encountered an error processing your request. Let me try again.",
-                "suggestions": ["Can you rephrase your request?", "Let's start over"]
-            })
     
-    async def _handle_initial_task(self, session_id: str, task: str):
-        """Handle initial task submission from user"""
-        session = chat_sessions[session_id]
+    def process_user_response(self, session_id: str, question_id: str, response: str) -> Dict[str, Any]:
+        """Process user response to a question"""
         
-        # Send thinking message
-        await self.send_ceo_message(session_id, {
-            "type": "thinking",
-            "message": "Let me analyze your task and determine what information I need..."
+        if session_id not in self.active_sessions:
+            raise ValueError(f"Session {session_id} not found")
+        
+        session = self.active_sessions[session_id]
+        
+        # Update state
+        session["state"] = ChatSessionState.PROCESSING_RESPONSE
+        session["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        # Store response
+        session["responses"][question_id] = response
+        session["questions_asked"].append(question_id)
+        session["question_count"] += 1
+        
+        # Log response
+        self._log_chat_event(session_id, "response_received", {
+            "question_id": question_id,
+            "response": response
         })
         
-        try:
-            # Start requirements gathering process
-            from ceo_requirements_gathering import ceo_requirements_router
-            
-            # Create requirements request
-            req = CEORequirementsRequest(
-                task=task,
-                user_context=session.get("user_context", {})
-            )
-            
-            # Mock request object for requirements gathering
-            class MockRequest:
-                def __init__(self, session_id):
-                    self.state = type('State', (), {'request_id': session_id})()
-            
-            mock_request = MockRequest(session_id)
-            
-            # Call requirements gathering
-            requirements_response = await ceo_requirements_gatherer.analyze_initial_task(task, session_id)
-            
-            # Store requirements session ID
-            requirements_session_id = str(uuid.uuid4())
-            session["requirements_session_id"] = requirements_session_id
-            
-            # Check if clarification is needed
-            if requirements_response.get("ready_to_proceed", False):
-                # Task is clear enough
-                session["current_state"] = "requirements_complete"
-                
-                await self.send_ceo_message(session_id, {
-                    "type": "requirements_complete",
-                    "message": "Perfect! Your task is clear and I have all the information I need.",
-                    "analysis": requirements_response,
-                    "actions": ["Proceed to create execution plan", "Review requirements"]
-                })
-                
-                # Automatically proceed to orchestration
-                await self._proceed_to_orchestration(session_id, task)
-            
-            else:
-                # Need clarification
-                session["current_state"] = "clarification"
-                session["pending_questions"] = []
-                
-                # Generate clarification questions
-                questions = await ceo_requirements_gatherer.generate_clarification_questions(
-                    requirements_response.get("missing_categories", []), task, session_id
-                )
-                
-                session["pending_questions"] = questions
-                session["current_question_index"] = 0
-                
-                # Send first clarification question
-                await self._ask_next_clarification_question(session_id)
+        # Process response through conversation flow
+        process_result = self.conversation_flow.process_response(
+            question_id, response, session
+        )
         
-        except Exception as e:
-            logger.error(f"Error in initial task handling: {e}")
-            await self.send_ceo_message(session_id, {
-                "type": "error",
-                "message": "I had trouble analyzing your task. Let me ask you directly:",
-                "questions": ["What is the main goal of your project?", "Who is your target audience?"]
-            })
+        # Determine next action
+        next_action = self._determine_next_action(session, process_result)
+        
+        return next_action
     
-    async def _ask_next_clarification_question(self, session_id: str):
-        """Ask the next clarification question"""
-        session = chat_sessions[session_id]
+    def _determine_next_action(self, session: Dict[str, Any], process_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Determine next action based on session state and response processing"""
         
-        if "pending_questions" not in session or not session["pending_questions"]:
-            await self._complete_requirements_gathering(session_id)
-            return
-        
-        current_index = session.get("current_question_index", 0)
-        questions = session["pending_questions"]
-        
-        if current_index >= len(questions):
-            await self._complete_requirements_gathering(session_id)
-            return
-        
-        question = questions[current_index]
-        remaining_questions = len(questions) - current_index
-        
-        await self.send_ceo_message(session_id, {
-            "type": "clarification_question",
-            "message": question,
-            "context": f"Question {current_index + 1} of {len(questions)}",
-            "progress": {
-                "current": current_index + 1,
-                "total": len(questions),
-                "remaining": remaining_questions - 1
-            },
-            "suggestions": self._get_question_suggestions(question)
-        })
-    
-    def _get_question_suggestions(self, question: str) -> List[str]:
-        """Get contextual suggestions for a question"""
-        question_lower = question.lower()
-        
-        if "purpose" in question_lower or "goal" in question_lower:
-            return ["Increase brand awareness", "Generate leads", "Educate audience", "Drive sales"]
-        elif "audience" in question_lower or "target" in question_lower:
-            return ["Business professionals", "Young adults (18-35)", "General public", "Industry experts"]
-        elif "format" in question_lower or "output" in question_lower:
-            return ["Blog post", "Social media posts", "Email campaign", "Video content"]
-        elif "timeline" in question_lower or "deadline" in question_lower:
-            return ["ASAP", "Within a week", "Within a month", "No specific deadline"]
-        else:
-            return ["Yes", "No", "Not sure", "Let me think about it"]
-    
-    async def _handle_clarification_response(self, session_id: str, response: str):
-        """Handle user's response to clarification question"""
-        session = chat_sessions[session_id]
-        
-        # Store the response
-        if "clarification_responses" not in session:
-            session["clarification_responses"] = {}
-        
-        current_index = session.get("current_question_index", 0)
-        questions = session.get("pending_questions", [])
-        
-        if current_index < len(questions):
-            question = questions[current_index]
-            session["clarification_responses"][question] = response
-            session["clarification_count"] += 1
-        
-        # Send acknowledgment
-        await self.send_ceo_message(session_id, {
-            "type": "acknowledgment",
-            "message": "Thank you for that information!"
-        })
-        
-        # Move to next question
-        session["current_question_index"] = current_index + 1
-        
-        # Small delay for natural conversation flow
-        await asyncio.sleep(1)
-        
-        await self._ask_next_clarification_question(session_id)
-    
-    async def _complete_requirements_gathering(self, session_id: str):
-        """Complete the requirements gathering process"""
-        session = chat_sessions[session_id]
-        
-        await self.send_ceo_message(session_id, {
-            "type": "processing",
-            "message": "Excellent! Let me process all your responses and create polished requirements..."
-        })
-        
-        try:
-            # Get original task from conversation history
-            original_task = ""
-            for msg in session["conversation_history"]:
-                if msg.get("from") == "user" and len(msg.get("message", "")) > 10:
-                    original_task = msg["message"]
-                    break
-            
-            clarifications = session.get("clarification_responses", {})
-            
-            # Polish requirements
-            polished = await ceo_requirements_gatherer.polish_requirements(
-                original_task, clarifications, session_id
-            )
-            
-            session["polished_requirements"] = polished
-            session["current_state"] = "requirements_complete"
-            
-            await self.send_ceo_message(session_id, {
-                "type": "requirements_complete",
-                "message": "\n".join(self.conversation_templates["requirements_complete"]),
-                "polished_requirements": polished,
-                "actions": ["Proceed with execution", "Review requirements", "Make changes"]
-            })
-            
-            # Automatically proceed to orchestration after a brief pause
-            await asyncio.sleep(2)
-            await self._proceed_to_orchestration(session_id, polished["polished_task"])
-        
-        except Exception as e:
-            logger.error(f"Error completing requirements gathering: {e}")
-            await self.send_ceo_message(session_id, {
-                "type": "error",
-                "message": "I had trouble processing your requirements. Let me try a simpler approach.",
-                "fallback_action": "proceed_with_original_task"
-            })
-    
-    async def _proceed_to_orchestration(self, session_id: str, task: str):
-        """Proceed to orchestration with polished requirements"""
-        session = chat_sessions[session_id]
-        
-        await self.send_ceo_message(session_id, {
-            "type": "orchestration_start",
-            "message": "Now I'm creating your execution plan and assembling the perfect team..."
-        })
-        
-        try:
-            # Call orchestration endpoint
-            import httpx
-            
-            orchestration_payload = {
-                "task": task,
-                "metadata": {
-                    "chat_session_id": session_id,
-                    "requirements_gathered": True,
-                    "clarifications_count": session.get("clarification_count", 0)
+        # Check if we need a follow-up question
+        if process_result.get("needs_followup") and session["question_count"] < session["max_questions"]:
+            followup_question = process_result.get("followup_question")
+            if followup_question:
+                followup_obj = {
+                    "id": f"q_followup_{session['question_count'] + 1}",
+                    "question": followup_question,
+                    "area": process_result.get("area", "general"),
+                    "type": "follow_up",
+                    "required": False
                 }
-            }
+                
+                session["state"] = ChatSessionState.ASKING_QUESTIONS
+                session["current_question"] = followup_obj
+                
+                return {
+                    "action": "ask_followup",
+                    "question": followup_obj,
+                    "message": "I need a bit more clarification on this point.",
+                    "questions_remaining": session["max_questions"] - session["question_count"]
+                }
+        
+        # Check if we have more pending questions
+        pending_questions = session.get("pending_questions", [])
+        unanswered_questions = [
+            q for q in pending_questions 
+            if q["id"] not in session["questions_asked"]
+        ]
+        
+        if unanswered_questions and session["question_count"] < session["max_questions"]:
+            next_question = unanswered_questions[0]
+            session["state"] = ChatSessionState.ASKING_QUESTIONS
+            session["current_question"] = next_question
             
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                response = await client.post(
-                    "http://localhost:8000/api/ceo/orchestrate",
-                    json=orchestration_payload
-                )
-                response.raise_for_status()
-                
-                orchestration_result = response.json()
-                
-                session["orchestration_result"] = orchestration_result
-                session["current_state"] = "orchestration_complete"
-                
-                await self.send_ceo_message(session_id, {
-                    "type": "orchestration_complete",
-                    "message": "Perfect! Your project has been completed successfully.",
-                    "result": orchestration_result,
-                    "summary": orchestration_result.get("final_output", ""),
-                    "actions": ["View detailed results", "Start new project", "Provide feedback"]
-                })
+            return {
+                "action": "ask_next",
+                "question": next_question,
+                "message": self._get_transition_message(session["question_count"]),
+                "questions_remaining": session["max_questions"] - session["question_count"]
+            }
         
-        except Exception as e:
-            logger.error(f"Error in orchestration: {e}")
-            await self.send_ceo_message(session_id, {
-                "type": "orchestration_error",
-                "message": "I encountered an issue while executing your project. Let me try again or we can modify the approach.",
-                "error_details": str(e),
-                "actions": ["Retry execution", "Modify requirements", "Contact support"]
-            })
+        # Check if we have enough information to proceed
+        if self._has_sufficient_information(session):
+            session["state"] = ChatSessionState.CONFIRMING_REQUIREMENTS
+            requirements_summary = self._generate_requirements_summary(session)
+            
+            return {
+                "action": "confirm_requirements",
+                "requirements_summary": requirements_summary,
+                "message": "Based on our conversation, here's what I understand about your requirements:",
+                "next_step": "Please review and confirm these requirements, or let me know if anything needs adjustment."
+            }
+        
+        # If we've asked max questions but still need info, wrap up
+        if session["question_count"] >= session["max_questions"]:
+            session["state"] = ChatSessionState.CONFIRMING_REQUIREMENTS
+            requirements_summary = self._generate_requirements_summary(session)
+            
+            return {
+                "action": "max_questions_reached",
+                "requirements_summary": requirements_summary,
+                "message": "I've gathered as much information as I can with our question limit. Here's what I understand:",
+                "next_step": "Please review these requirements and let me know if they capture your needs."
+            }
+        
+        # Default: ask for more details
+        return {
+            "action": "need_more_info",
+            "message": "I need a bit more information to create comprehensive requirements.",
+            "suggestion": "Could you provide more details about your specific needs?"
+        }
     
-    async def _handle_requirements_review(self, session_id: str, message: str):
-        """Handle user feedback on requirements review"""
-        message_lower = message.lower()
+    def confirm_requirements(self, session_id: str, confirmed: bool, adjustments: Optional[str] = None) -> Dict[str, Any]:
+        """Handle requirements confirmation"""
         
-        if "proceed" in message_lower or "looks good" in message_lower or "yes" in message_lower:
-            session = chat_sessions[session_id]
-            polished_task = session.get("polished_requirements", {}).get("polished_task", message)
-            await self._proceed_to_orchestration(session_id, polished_task)
+        if session_id not in self.active_sessions:
+            raise ValueError(f"Session {session_id} not found")
         
-        elif "change" in message_lower or "modify" in message_lower or "no" in message_lower:
-            await self.send_ceo_message(session_id, {
-                "type": "modification_request",
-                "message": "What would you like to change about the requirements?",
-                "suggestions": ["Change target audience", "Modify timeline", "Adjust scope", "Different format"]
+        session = self.active_sessions[session_id]
+        
+        if confirmed:
+            session["state"] = ChatSessionState.FINALIZING
+            
+            # Generate final polished requirements
+            polished_requirements = self._polish_requirements(session)
+            
+            session["state"] = ChatSessionState.COMPLETE
+            session["polished_requirements"] = polished_requirements
+            session["completed_at"] = datetime.now(timezone.utc).isoformat()
+            
+            # Log completion
+            self._log_chat_event(session_id, "requirements_confirmed", {
+                "polished_requirements": polished_requirements
             })
-        
+            
+            return {
+                "action": "requirements_complete",
+                "polished_requirements": polished_requirements,
+                "message": "Perfect! I've finalized your requirements and they're ready for the next phase.",
+                "next_step": "proceed_to_agent_planning"
+            }
         else:
-            await self._handle_general_conversation(session_id, message)
+            # Handle adjustments
+            if adjustments:
+                session["responses"]["adjustments"] = adjustments
+                
+                # Re-analyze with adjustments
+                updated_summary = self._generate_requirements_summary(session)
+                
+                return {
+                    "action": "requirements_adjusted",
+                    "requirements_summary": updated_summary,
+                    "message": "I've updated the requirements based on your feedback.",
+                    "next_step": "Please review the updated requirements."
+                }
+            else:
+                return {
+                    "action": "need_adjustments",
+                    "message": "Please let me know what adjustments you'd like to make to the requirements."
+                }
     
-    async def _handle_general_conversation(self, session_id: str, message: str):
-        """Handle general conversation and provide helpful responses"""
+    def get_session_status(self, session_id: str) -> Dict[str, Any]:
+        """Get current status of a chat session"""
         
-        # Use AI to generate contextual response
-        conversation_prompt = f"""
-As a CEO agent, respond to this user message in a helpful, professional manner.
-
-User message: {message}
-
-Provide a brief, helpful response that:
-1. Acknowledges their message
-2. Offers assistance
-3. Suggests next steps if appropriate
-
-Keep the response conversational and under 100 words.
-"""
+        if session_id not in self.active_sessions:
+            return {
+                "status": "not_found",
+                "message": f"Session {session_id} not found"
+            }
+        
+        session = self.active_sessions[session_id]
+        
+        return {
+            "session_id": session_id,
+            "state": session["state"].value,
+            "questions_asked": len(session["questions_asked"]),
+            "max_questions": session["max_questions"],
+            "responses_collected": len(session["responses"]),
+            "current_question": session.get("current_question"),
+            "created_at": session["created_at"],
+            "updated_at": session["updated_at"],
+            "is_complete": session["state"] == ChatSessionState.COMPLETE
+        }
+    
+    def _generate_greeting(self, task: str) -> str:
+        """Generate personalized greeting for the chat session"""
+        
+        task_preview = task[:100] + "..." if len(task) > 100 else task
+        
+        greetings = [
+            f"Hello! I'm the CEO agent, and I'll help you create clear requirements for: '{task_preview}'. I'll ask you a few questions to better understand your needs.",
+            f"Welcome! I see you need help with: '{task_preview}'. Let me ask you some questions to ensure I understand exactly what you're looking for.",
+            f"Hi there! I'm here to help you define requirements for your task. I'll guide you through a few questions to make sure we capture everything correctly."
+        ]
+        
+        # Select greeting based on task length/complexity
+        if len(task) < 50:
+            return greetings[1]  # Short task, needs more detail
+        elif len(task) > 200:
+            return greetings[2]  # Long task, already detailed
+        else:
+            return greetings[0]  # Medium task, balanced approach
+    
+    def _get_transition_message(self, question_count: int) -> str:
+        """Get appropriate transition message between questions"""
+        
+        transitions = [
+            "Great! Let me ask you about another aspect.",
+            "Thank you for that information. Moving on...",
+            "Perfect! I have another question for you.",
+            "That's helpful! Let's talk about...",
+            "Excellent! One more thing I'd like to understand..."
+        ]
+        
+        # Use different transitions based on progress
+        if question_count == 0:
+            return "Let's start with the first question."
+        elif question_count >= 4:
+            return "Almost done! Just one more question."
+        else:
+            return transitions[question_count % len(transitions)]
+    
+    def _has_sufficient_information(self, session: Dict[str, Any]) -> bool:
+        """Check if we have sufficient information to proceed"""
+        
+        responses = session.get("responses", {})
+        
+        # Check if we have responses for required areas
+        required_areas = ["purpose", "audience"]
+        has_required = any(
+            area in str(response_key) 
+            for area in required_areas 
+            for response_key in responses.keys()
+        )
+        
+        # Need at least 3 responses or all required areas covered
+        return len(responses) >= 3 and has_required
+    
+    def _generate_requirements_summary(self, session: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate requirements summary from collected responses"""
+        
+        responses = session.get("responses", {})
+        
+        # Map responses to requirement areas
+        mapped_responses = {}
+        for question_id, response in responses.items():
+            if "purpose" in question_id:
+                mapped_responses["purpose"] = response
+            elif "audience" in question_id:
+                mapped_responses["audience"] = response
+            elif "scope" in question_id:
+                mapped_responses["scope"] = response
+            elif "timeline" in question_id:
+                mapped_responses["timeline"] = response
+            elif "constraints" in question_id:
+                mapped_responses["constraints"] = response
+            else:
+                mapped_responses[question_id] = response
+        
+        # Use conversation flow to generate summary
+        return self.conversation_flow.generate_requirements_summary(mapped_responses)
+    
+    def _polish_requirements(self, session: Dict[str, Any]) -> CEOPolishedRequirement:
+        """Generate polished requirements from session data"""
+        
+        summary = self._generate_requirements_summary(session)
+        
+        # Create polished requirement object
+        polished = CEOPolishedRequirement(
+            polished_task=self._create_polished_task_description(session, summary),
+            objective=summary.get("purpose", "Not specified"),
+            target_audience=summary.get("target_audience", "General users"),
+            deliverables=self._extract_deliverables(summary),
+            success_criteria=summary.get("success_criteria", ["Task completed successfully"]),
+            constraints=self._extract_constraints(summary),
+            timeline=summary.get("timeline", "Flexible"),
+            additional_context=self._compile_additional_context(session),
+            agent_plan_suggestion=self._suggest_agent_plan(summary)
+        )
+        
+        return polished
+    
+    def _create_polished_task_description(self, session: Dict[str, Any], summary: Dict[str, Any]) -> str:
+        """Create polished task description"""
+        
+        original_task = session.get("original_task", "")
+        purpose = summary.get("purpose", "")
+        audience = summary.get("target_audience", "")
+        
+        polished = f"{original_task}\n\n"
+        polished += f"Purpose: {purpose}\n"
+        polished += f"Target Audience: {audience}\n"
+        
+        if summary.get("scope"):
+            polished += f"Scope: {summary['scope'].get('included', 'To be determined')}\n"
+        
+        return polished.strip()
+    
+    def _extract_deliverables(self, summary: Dict[str, Any]) -> List[str]:
+        """Extract deliverables from summary"""
+        
+        deliverables = []
+        
+        # Extract from scope
+        scope = summary.get("scope", {})
+        if isinstance(scope, dict) and "included" in scope:
+            # Parse included items as deliverables
+            included = scope["included"]
+            if isinstance(included, str):
+                deliverables.extend([item.strip() for item in included.split(",") if item.strip()])
+        
+        # Add default deliverable if none found
+        if not deliverables:
+            deliverables.append("Complete the requested task as specified")
+        
+        return deliverables
+    
+    def _extract_constraints(self, summary: Dict[str, Any]) -> List[str]:
+        """Extract constraints from summary"""
+        
+        constraints = []
+        
+        constraints_text = summary.get("constraints", "")
+        if constraints_text and constraints_text != "No specific constraints":
+            constraints.extend([c.strip() for c in constraints_text.split(",") if c.strip()])
+        
+        # Add timeline as constraint if urgent
+        priority = summary.get("priority", "")
+        if priority in ["urgent", "high"]:
+            constraints.append(f"High priority - {priority} timeline")
+        
+        return constraints if constraints else ["No specific constraints"]
+    
+    def _compile_additional_context(self, session: Dict[str, Any]) -> str:
+        """Compile additional context from session"""
+        
+        context_parts = []
+        
+        # Add user context if provided
+        user_context = session.get("user_context", {})
+        if user_context:
+            context_parts.append(f"User Context: {str(user_context)}")
+        
+        # Add any adjustment responses
+        if "adjustments" in session.get("responses", {}):
+            context_parts.append(f"Adjustments: {session['responses']['adjustments']}")
+        
+        # Add session metadata
+        context_parts.append(f"Questions asked: {len(session.get('questions_asked', []))}")
+        context_parts.append(f"Session duration: {self._calculate_session_duration(session)}")
+        
+        return "\n".join(context_parts)
+    
+    def _suggest_agent_plan(self, summary: Dict[str, Any]) -> str:
+        """Suggest which agents to use based on requirements"""
+        
+        suggestions = []
+        
+        purpose = summary.get("purpose", "").lower()
+        
+        # Content creation agents
+        if any(word in purpose for word in ["write", "content", "article", "blog", "copy"]):
+            suggestions.append("Content Writer Agent")
+        
+        # Social media agents
+        if any(word in purpose for word in ["social", "post", "instagram", "twitter", "linkedin"]):
+            suggestions.append("Social Media Publisher Agent")
+        
+        # Technical agents
+        if any(word in purpose for word in ["code", "develop", "program", "test", "debug"]):
+            suggestions.extend(["Unit Test Agent", "PR Agent", "Sonar Agent"])
+        
+        # Default suggestion
+        if not suggestions:
+            suggestions.append("Appropriate specialized agent based on task type")
+        
+        return ", ".join(suggestions)
+    
+    def _calculate_session_duration(self, session: Dict[str, Any]) -> str:
+        """Calculate session duration"""
         
         try:
-            ai_response = await ai_service.generate_content(conversation_prompt, session_id)
+            created = datetime.fromisoformat(session["created_at"].replace('Z', '+00:00'))
+            updated = datetime.fromisoformat(session["updated_at"].replace('Z', '+00:00'))
+            duration = updated - created
             
-            await self.send_ceo_message(session_id, {
-                "type": "conversation",
-                "message": ai_response,
-                "suggestions": ["Start new project", "Ask a question", "Get help"]
-            })
+            minutes = int(duration.total_seconds() / 60)
+            if minutes < 1:
+                return "Less than 1 minute"
+            elif minutes == 1:
+                return "1 minute"
+            else:
+                return f"{minutes} minutes"
+        except:
+            return "Duration unknown"
+    
+    def _log_chat_event(self, session_id: str, event_type: str, data: Dict[str, Any]):
+        """Log chat event to session history"""
         
-        except Exception as e:
-            logger.error(f"Error generating AI response: {e}")
-            await self.send_ceo_message(session_id, {
-                "type": "fallback",
-                "message": "I understand. How can I help you with your project requirements?",
-                "suggestions": ["Start new task", "Ask about capabilities", "Get examples"]
-            })
+        event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event_type": event_type,
+            "data": data
+        }
+        
+        if session_id not in self.session_history:
+            self.session_history[session_id] = []
+        
+        self.session_history[session_id].append(event)
+        self.logger.info(f"Chat event: {event_type} for session {session_id}")
 
 
-# Initialize CEO Chat Manager
-ceo_chat_manager = CEOChatManager()
-
-
-@ceo_chat_router.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    """WebSocket endpoint for real-time CEO chat"""
-    await ceo_chat_manager.connect(websocket, session_id)
-    
-    try:
-        while True:
-            # Receive message from user
-            data = await websocket.receive_text()
-            message_data = json.loads(data)
-            
-            user_message = message_data.get("message", "")
-            if user_message:
-                await ceo_chat_manager.handle_user_message(session_id, user_message)
-    
-    except WebSocketDisconnect:
-        ceo_chat_manager.disconnect(session_id)
-    except Exception as e:
-        logger.error(f"WebSocket error in session {session_id}: {e}")
-        ceo_chat_manager.disconnect(session_id)
-
-
-@ceo_chat_router.get("/sessions/{session_id}")
-async def get_chat_session(session_id: str):
-    """Get chat session details"""
-    if session_id not in chat_sessions:
-        raise HTTPException(status_code=404, detail="Chat session not found")
-    
-    return {
-        "status": "success",
-        "session": chat_sessions[session_id],
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-
-@ceo_chat_router.get("/sessions")
-async def list_chat_sessions():
-    """List all active chat sessions"""
-    return {
-        "status": "success",
-        "active_sessions": len(active_connections),
-        "total_sessions": len(chat_sessions),
-        "sessions": list(chat_sessions.keys()),
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-
-# Export router
-__all__ = ["ceo_chat_router", "ceo_chat_manager", "CEOChatManager"]
+# Create global instance
+ceo_chat_interface = CEOChatInterface()
