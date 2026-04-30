@@ -4,26 +4,23 @@ import logging
 from contextlib import asynccontextmanager
 
 # Import configuration
-from config import CORS_ORIGINS, APP_TITLE, LOG_LEVEL, LOG_FORMAT
+from src.core.config import CORS_ORIGINS, APP_TITLE, LOG_LEVEL, LOG_FORMAT
 
 # Import logging configuration and middleware
-from logging_config import setup_logging
-from middleware import APILoggingMiddleware, OrchestrationLoggingMiddleware
+from src.core.logging_config import setup_logging
+from src.core.middleware import APILoggingMiddleware, OrchestrationLoggingMiddleware
 
 # Import routes
-from routes import api_router
-from health import health_router
-from agent_routes import agent_router
-from simple_agent_routes import router as simple_agent_router
-from orchestration_routes import orchestration_router
-from ceo_orchestration_routes import ceo_router
-from ceo_requirements_gathering import ceo_requirements_router
-from ceo_chat_routes import ceo_chat_router
-from ceo_chat_message_routes import ceo_message_router
-from ceo_simplified_routes import ceo_simplified_router
+from src.core.health import health_router
+from src.routes.agent_routes import agent_router
+from src.routes.ceo_orchestration_routes import ceo_router
+from src.agents.ceo.ceo_requirements_gathering import ceo_requirements_router
+from src.routes.ceo_chat_routes import ceo_chat_router
+from src.routes.ceo_chat_message_routes import ceo_message_router
+from src.routes.ceo_simplified_routes import ceo_simplified_router
 
 # Import exception handlers
-from exceptions import (
+from src.core.exceptions import (
     BaseAPIException,
     api_exception_handler,
     general_exception_handler,
@@ -31,7 +28,7 @@ from exceptions import (
 )
 
 # Import AI startup functions
-from ai_startup import initialize_ai_providers, cleanup_ai_providers
+from src.core.ai_startup import initialize_ai_providers, cleanup_ai_providers
 
 # Initialize logging before creating the app
 setup_logging()
@@ -69,12 +66,13 @@ app = FastAPI(title=APP_TITLE, lifespan=lifespan)
 app.add_middleware(APILoggingMiddleware, exclude_paths=['/health', '/metrics', '/favicon.ico'])
 app.add_middleware(OrchestrationLoggingMiddleware)
 
+# Import the main API router that includes the teams endpoint
+from src.routes.routes import api_router
+
 # Include API routes
-app.include_router(api_router)
 app.include_router(health_router)
+app.include_router(api_router)  # This includes the /api/teams endpoint
 app.include_router(agent_router)
-app.include_router(simple_agent_router)
-app.include_router(orchestration_router)
 app.include_router(ceo_router)
 app.include_router(ceo_requirements_router)
 app.include_router(ceo_chat_router)

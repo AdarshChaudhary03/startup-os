@@ -10,7 +10,7 @@ import uvicorn
 import os
 import sys
 from pathlib import Path
-from logging_config import setup_logging
+from src.core.logging_config import setup_logging
 import logging
 from dotenv import load_dotenv
 
