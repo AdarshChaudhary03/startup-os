@@ -145,7 +145,7 @@ class AIService:
         provider_name: str = None,
         model: str = None,
         **kwargs
-    ) -> AIResponse:
+    ) -> str:
         """Generate content using the specified or default provider.
         
         Args:
@@ -155,7 +155,7 @@ class AIService:
             **kwargs: Additional generation parameters
             
         Returns:
-            AIResponse: Generated content response
+            str: Generated content as string
             
         Raises:
             ContentGenerationError: If content generation fails
@@ -174,8 +174,11 @@ class AIService:
                 **kwargs
             )
             
-            logger.info(f"Content generated successfully, length: {len(response.content)}")
-            return response
+            # Extract content string from AIResponse object
+            content = response.content if hasattr(response, 'content') else str(response)
+            
+            logger.info(f"Content generated successfully, length: {len(content)}")
+            return content
             
         except Exception as e:
             logger.error(f"Content generation failed: {e}")

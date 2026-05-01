@@ -46,15 +46,31 @@ async def send_chat_message(request_data: Dict[str, Any], request: Request):
         )
         
         # Process the message through conversation flow
-        flow_result = ceo_conversation_flow.process_user_message(
+        flow_result = await ceo_conversation_flow.process_user_message(
             session_id=conversation_id,
             message=message,
             session_data=session_data
         )
         
+        # Check if flow_result is None
+        if flow_result is None:
+            logger.error(f"[CEO_CHAT_MESSAGE] Flow result is None for conversation {conversation_id}")
+            raise HTTPException(status_code=500, detail="Failed to process message - flow result is None")
+        
         # Update session data
         session_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        session_data["state"] = flow_result.get("state", session_data["state"])
+        session_data["state"] = flow_result.get("state", session_data.get("state", "gathering_requirements"))
+        
+        # CRITICAL FIX: Store polished prompt in session data when it's created
+        if flow_result.get("polished_prompt"):
+            session_data["polished_prompt"] = flow_result.get("polished_prompt")
+            logger.info(f"[CEO_CHAT_MESSAGE] Stored polished prompt in session data for {conversation_id}")
+        
+        # Store other important data from flow result
+        if flow_result.get("executive_summary"):
+            session_data["executive_summary"] = flow_result.get("executive_summary")
+        if flow_result.get("deliverables"):
+            session_data["deliverables"] = flow_result.get("deliverables")
         
         # Prepare response
         response = {
@@ -64,6 +80,13 @@ async def send_chat_message(request_data: Dict[str, Any], request: Request):
             "requirements": flow_result.get("requirements", {}),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+        
+        # Include confirmation requirement flag and polished prompt info if available
+        if flow_result.get("requires_confirmation"):
+            response["requires_confirmation"] = True
+            response["polished_prompt"] = flow_result.get("polished_prompt")
+            response["executive_summary"] = flow_result.get("executive_summary")
+            response["deliverables"] = flow_result.get("deliverables")
         
         # Check if requirements are complete
         if flow_result.get("state") == "requirements_complete":

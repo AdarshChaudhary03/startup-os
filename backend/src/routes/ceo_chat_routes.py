@@ -40,25 +40,49 @@ async def start_chat_session(request_data: Dict[str, Any], request: Request):
         )
         
         # Start chat session
-        session_info = ceo_chat_interface.start_chat_session(
+        session_info = await ceo_chat_interface.start_chat_session(
             task=initial_message,
             user_context=request_data.get("user_context")
         )
         
+        # Check for errors in session info
+        if "error" in session_info:
+            logger.error(f"Error in chat session initialization: {session_info['error']}")
+            # Still return a valid response structure
+            return {
+                "conversation_id": session_info.get("session_id", str(uuid.uuid4())),
+                "state": "gathering_requirements",
+                "message": session_info.get("greeting", "Hello! I'll help you with your requirements."),
+                "requirements": {},
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "initial_questions": session_info.get("initial_questions", []) if session_info.get("initial_questions") is not None else [],
+                "ai_analysis": session_info.get("ai_analysis", {}) if session_info.get("ai_analysis") is not None else {}
+            }
+        
         # Return the expected response structure for the frontend
         return {
-            "conversation_id": session_info["session_id"],
-            "state": "gathering_requirements",
-            "message": session_info["greeting"],
+            "conversation_id": session_info.get("session_id", str(uuid.uuid4())),
+            "state": session_info.get("state", "gathering_requirements"),
+            "message": session_info.get("greeting", "Hello! I'll help you with your requirements."),
             "requirements": {},
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "initial_questions": session_info.get("initial_questions", []) if session_info.get("initial_questions") is not None else [],
+            "ai_analysis": session_info.get("ai_analysis", {}) if session_info.get("ai_analysis") is not None else {}
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to start chat session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to start chat session: {e}", exc_info=True)
+        # Return a structured error response instead of raising 500
+        return {
+            "conversation_id": str(uuid.uuid4()),
+            "state": "error",
+            "message": "I encountered an issue starting the chat session. Let me try a simpler approach.",
+            "requirements": {},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error_details": str(e)
+        }
 
 
 @ceo_chat_router.post("/respond/{session_id}")
@@ -85,27 +109,54 @@ async def submit_response(session_id: str, response_data: Dict[str, Any], reques
         )
         
         # Process response
-        result = ceo_chat_interface.process_user_response(
+        result = await ceo_chat_interface.process_user_response(
             session_id=session_id,
             question_id=question_id,
             response=response
         )
+        
+        # Handle error responses gracefully
+        if result.get("action") == "error":
+            logger.warning(f"Error processing response: {result.get('error')}")
+            return {
+                "status": "warning",
+                "action": "continue",
+                "message": result.get("message", "Let's continue with your requirements."),
+                "next_question": None,
+                "questions_remaining": 0,
+                "requirements_summary": {},
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
         
         return {
             "status": "success",
             "action": result["action"],
             "message": result.get("message", ""),
             "next_question": result.get("question"),
-            "questions_remaining": result.get("questions_remaining"),
-            "requirements_summary": result.get("requirements_summary"),
+            "questions_remaining": result.get("questions_remaining", 0),
+            "requirements_summary": result.get("requirements_summary", {}),
+            "ai_analysis": result.get("ai_analysis", {}),
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
     except ValueError as e:
+        logger.error(f"Session not found: {e}")
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to process response: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to process response: {e}", exc_info=True)
+        # Return a graceful error response
+        return {
+            "status": "error",
+            "action": "continue",
+            "message": "I encountered an issue processing your response. Let's continue.",
+            "next_question": None,
+            "questions_remaining": 0,
+            "requirements_summary": {},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error_details": str(e)
+        }
 
 
 @ceo_chat_router.post("/confirm/{session_id}")
@@ -129,7 +180,7 @@ async def confirm_requirements(session_id: str, confirmation_data: Dict[str, Any
         )
         
         # Process confirmation
-        result = ceo_chat_interface.confirm_requirements(
+        result = await ceo_chat_interface.confirm_requirements(
             session_id=session_id,
             confirmed=confirmed,
             adjustments=adjustments
@@ -143,43 +194,72 @@ async def confirm_requirements(session_id: str, confirmation_data: Dict[str, Any
         }
         
         if result["action"] == "requirements_complete":
-            # Generate comprehensive analysis and plan
-            session_data = ceo_chat_interface.active_sessions.get(session_id, {})
-            polished_requirements = result["polished_requirements"]
-            
-            # Perform comprehensive analysis
-            analysis = await ceo_requirements_analyzer.analyze_requirements(
-                task=session_data.get("original_task", ""),
-                responses=session_data.get("responses", {}),
-                context=session_data,
-                request_id=request_id
-            )
-            
-            # Create agent plan
-            agent_plan = await ceo_agent_planner.create_agent_plan(
-                requirements=polished_requirements.dict(),
-                request_id=request_id
-            )
-            
-            response.update({
-                "polished_requirements": polished_requirements.dict(),
-                "analysis": analysis,
-                "agent_plan": agent_plan,
-                "next_step": "proceed_to_execution"
-            })
+            try:
+                # Generate comprehensive analysis and plan
+                session_data = ceo_chat_interface.active_sessions.get(session_id, {})
+                polished_requirements = result["polished_requirements"]
+                
+                # Perform comprehensive analysis with error handling
+                analysis = None
+                try:
+                    analysis = await ceo_requirements_analyzer.analyze_requirements(
+                        task=session_data.get("original_task", ""),
+                        responses=session_data.get("responses", {}),
+                        context=session_data,
+                        request_id=request_id
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to analyze requirements: {e}")
+                    analysis = {"error": "Analysis temporarily unavailable", "details": str(e)}
+                
+                # Create agent plan with error handling
+                agent_plan = None
+                try:
+                    agent_plan = await ceo_agent_planner.create_agent_plan(
+                        requirements=polished_requirements.dict() if hasattr(polished_requirements, 'dict') else polished_requirements,
+                        request_id=request_id
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to create agent plan: {e}")
+                    agent_plan = {"error": "Agent planning temporarily unavailable", "details": str(e)}
+                
+                response.update({
+                    "polished_requirements": polished_requirements.dict() if hasattr(polished_requirements, 'dict') else polished_requirements,
+                    "analysis": analysis,
+                    "agent_plan": agent_plan,
+                    "next_step": "proceed_to_execution"
+                })
+            except Exception as e:
+                logger.error(f"Error in requirements completion: {e}", exc_info=True)
+                # Still return success with partial data
+                response.update({
+                    "polished_requirements": result.get("polished_requirements", {}),
+                    "next_step": "proceed_to_execution",
+                    "warning": "Some analysis features temporarily unavailable"
+                })
         else:
             response.update({
-                "requirements_summary": result.get("requirements_summary"),
-                "next_step": result.get("next_step")
+                "requirements_summary": result.get("requirements_summary", {}),
+                "next_step": result.get("next_step", "continue")
             })
         
         return response
         
     except ValueError as e:
+        logger.error(f"Session not found: {e}")
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to confirm requirements: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to confirm requirements: {e}", exc_info=True)
+        # Return a graceful error response
+        return {
+            "status": "error",
+            "action": "retry",
+            "message": "I encountered an issue confirming requirements. Please try again.",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error_details": str(e)
+        }
 
 
 @ceo_chat_router.get("/status/{session_id}")
@@ -189,8 +269,9 @@ async def get_chat_status(session_id: str):
     try:
         status = ceo_chat_interface.get_session_status(session_id)
         
-        if status["status"] == "not_found":
-            raise HTTPException(status_code=404, detail=status["message"])
+        # Check if this is a not found response (different structure)
+        if isinstance(status, dict) and status.get("status") == "not_found":
+            raise HTTPException(status_code=404, detail=status.get("message", "Session not found"))
         
         return {
             "status": "success",

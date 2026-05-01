@@ -33,7 +33,7 @@ class CEOChatInterface:
         self.active_sessions: Dict[str, Dict[str, Any]] = {}
         self.session_history: Dict[str, List[Dict[str, Any]]] = {}
     
-    def start_chat_session(self, task: str, user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def start_chat_session(self, task: str, user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Start a new chat session for requirements gathering"""
         
         session_id = str(uuid.uuid4())
@@ -53,7 +53,10 @@ class CEOChatInterface:
             "question_count": 0,
             "max_questions": 5,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat()
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "answers": {},
+            "current_question_index": 0,
+            "questions": []
         }
         
         self.active_sessions[session_id] = session_data
@@ -65,24 +68,53 @@ class CEOChatInterface:
             "user_context": user_context
         })
         
-        # Generate initial greeting and questions
+        # Generate initial greeting
         greeting = self._generate_greeting(task)
-        initial_questions = self.conversation_flow.get_initial_questions(task, "adaptive")
         
-        # Update session with questions
-        session_data["state"] = ChatSessionState.ASKING_QUESTIONS
-        session_data["pending_questions"] = initial_questions
-        session_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        
-        return {
-            "session_id": session_id,
-            "greeting": greeting,
-            "initial_questions": initial_questions,
-            "state": session_data["state"].value,
-            "max_questions": session_data["max_questions"]
-        }
+        # Use AI-driven conversation flow to analyze task and get questions
+        try:
+            ai_result = await self.conversation_flow.process_user_message(session_id, task, session_data)
+            
+            # Update session based on AI result with null checks
+            if ai_result and ai_result.get("state") == ConversationState.AI_QUESTIONING.value:
+                session_data["state"] = ChatSessionState.ASKING_QUESTIONS
+                session_data["questions"] = ai_result.get("questions", []) if ai_result.get("questions") is not None else []
+                session_data["current_question_index"] = 0
+                initial_questions = ai_result.get("questions", []) if ai_result.get("questions") is not None else []
+            elif ai_result:
+                # Task is already complete
+                session_data["state"] = ChatSessionState.COMPLETE
+                session_data["polished_prompt"] = ai_result.get("polished_prompt")
+                initial_questions = []
+            else:
+                # AI result is None, handle gracefully
+                session_data["state"] = ChatSessionState.ASKING_QUESTIONS
+                initial_questions = []
+            
+            session_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+            
+            return {
+                "session_id": session_id,
+                "greeting": greeting,
+                "initial_questions": initial_questions,
+                "state": session_data["state"].value,
+                "max_questions": session_data["max_questions"],
+                "ai_analysis": ai_result.get("analysis") if ai_result else {}
+            }
+        except Exception as e:
+            self.logger.error(f"Failed to start chat session with AI: {e}")
+            # Fallback to simple response
+            session_data["state"] = ChatSessionState.ASKING_QUESTIONS
+            return {
+                "session_id": session_id,
+                "greeting": greeting,
+                "initial_questions": [],
+                "state": session_data["state"].value,
+                "max_questions": session_data["max_questions"],
+                "error": str(e)
+            }
     
-    def process_user_response(self, session_id: str, question_id: str, response: str) -> Dict[str, Any]:
+    async def process_user_response(self, session_id: str, question_id: str, response: str) -> Dict[str, Any]:
         """Process user response to a question"""
         
         if session_id not in self.active_sessions:
@@ -105,15 +137,55 @@ class CEOChatInterface:
             "response": response
         })
         
-        # Process response through conversation flow
-        process_result = self.conversation_flow.process_response(
-            question_id, response, session
-        )
-        
-        # Determine next action
-        next_action = self._determine_next_action(session, process_result)
-        
-        return next_action
+        # Process response through AI conversation flow
+        try:
+            ai_result = await self.conversation_flow.process_user_message(session_id, response, session)
+            
+            # Update session based on AI result
+            if ai_result.get("state") == ConversationState.AI_QUESTIONING.value:
+                session["state"] = ChatSessionState.ASKING_QUESTIONS
+                if "questions" in ai_result:
+                    session["questions"] = ai_result["questions"]
+                if "current_question_index" in ai_result:
+                    session["current_question_index"] = ai_result["current_question_index"]
+                
+                return {
+                    "action": "ask_next",
+                    "question": {
+                        "id": f"q_{session['current_question_index']}",
+                        "question": ai_result["response"]
+                    },
+                    "message": "Let me ask you about another aspect.",
+                    "questions_remaining": len(session.get("questions", [])) - session.get("current_question_index", 0),
+                    "ai_analysis": ai_result.get("analysis")
+                }
+            elif ai_result.get("state") == ConversationState.COMPLETE.value:
+                session["state"] = ChatSessionState.CONFIRMING_REQUIREMENTS
+                session["polished_prompt"] = ai_result.get("polished_prompt")
+                
+                return {
+                    "action": "confirm_requirements",
+                    "requirements_summary": {
+                        "polished_prompt": ai_result.get("polished_prompt"),
+                        "analysis": ai_result.get("analysis")
+                    },
+                    "message": ai_result["response"],
+                    "next_step": "Please review and confirm these requirements."
+                }
+            else:
+                # Continue with questions
+                return {
+                    "action": "continue",
+                    "message": ai_result.get("response", "Processing your response...")
+                }
+        except Exception as e:
+            self.logger.error(f"Failed to process response with AI: {e}")
+            # Fallback to simple acknowledgment
+            return {
+                "action": "error",
+                "message": "I encountered an issue processing your response. Let's continue.",
+                "error": str(e)
+            }
     
     def _determine_next_action(self, session: Dict[str, Any], process_result: Dict[str, Any]) -> Dict[str, Any]:
         """Determine next action based on session state and response processing"""
@@ -190,7 +262,7 @@ class CEOChatInterface:
             "suggestion": "Could you provide more details about your specific needs?"
         }
     
-    def confirm_requirements(self, session_id: str, confirmed: bool, adjustments: Optional[str] = None) -> Dict[str, Any]:
+    async def confirm_requirements(self, session_id: str, confirmed: bool, adjustments: Optional[str] = None) -> Dict[str, Any]:
         """Handle requirements confirmation"""
         
         if session_id not in self.active_sessions:
@@ -201,8 +273,22 @@ class CEOChatInterface:
         if confirmed:
             session["state"] = ChatSessionState.FINALIZING
             
-            # Generate final polished requirements
-            polished_requirements = self._polish_requirements(session)
+            # Get polished prompt from AI analysis or generate requirements
+            if "polished_prompt" in session:
+                polished_requirements = CEOPolishedRequirement(
+                    polished_task=session["polished_prompt"],
+                    objective="AI-analyzed task objectives",
+                    target_audience="As identified by AI analysis",
+                    deliverables=["Complete the task as specified in the polished prompt"],
+                    success_criteria=["Task completed according to AI-refined requirements"],
+                    constraints=["No specific constraints"],
+                    timeline="Flexible",
+                    additional_context="AI-driven analysis completed",
+                    agent_plan_suggestion="Use appropriate agents based on task requirements"
+                )
+            else:
+                # Fallback to traditional requirements polishing
+                polished_requirements = self._polish_requirements(session)
             
             session["state"] = ChatSessionState.COMPLETE
             session["polished_requirements"] = polished_requirements
@@ -224,15 +310,37 @@ class CEOChatInterface:
             if adjustments:
                 session["responses"]["adjustments"] = adjustments
                 
-                # Re-analyze with adjustments
-                updated_summary = self._generate_requirements_summary(session)
-                
-                return {
-                    "action": "requirements_adjusted",
-                    "requirements_summary": updated_summary,
-                    "message": "I've updated the requirements based on your feedback.",
-                    "next_step": "Please review the updated requirements."
-                }
+                # Re-analyze with adjustments through AI
+                try:
+                    # Add adjustments to the conversation and re-process
+                    ai_result = await self.conversation_flow.process_user_message(
+                        session_id, 
+                        f"Please adjust the requirements with these changes: {adjustments}", 
+                        session
+                    )
+                    
+                    if ai_result.get("polished_prompt"):
+                        session["polished_prompt"] = ai_result["polished_prompt"]
+                    
+                    return {
+                        "action": "requirements_adjusted",
+                        "requirements_summary": {
+                            "polished_prompt": ai_result.get("polished_prompt"),
+                            "analysis": ai_result.get("analysis")
+                        },
+                        "message": "I've updated the requirements based on your feedback.",
+                        "next_step": "Please review the updated requirements."
+                    }
+                except Exception as e:
+                    self.logger.error(f"Failed to process adjustments with AI: {e}")
+                    # Fallback to traditional summary
+                    updated_summary = self._generate_requirements_summary(session)
+                    return {
+                        "action": "requirements_adjusted",
+                        "requirements_summary": updated_summary,
+                        "message": "I've updated the requirements based on your feedback.",
+                        "next_step": "Please review the updated requirements."
+                    }
             else:
                 return {
                     "action": "need_adjustments",

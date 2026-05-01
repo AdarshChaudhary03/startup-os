@@ -87,6 +87,9 @@ class GroqProvider(BaseAIProvider):
                 "stream": False
             }
             
+            # Log the payload for debugging
+            logger.debug(f"Groq API payload: {payload}")
+            
             response = await self._client.post("/chat/completions", json=payload)
             response.raise_for_status()
             
@@ -107,6 +110,11 @@ class GroqProvider(BaseAIProvider):
                 }
             )
             
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Groq HTTP error: Status {e.response.status_code}")
+            logger.error(f"Groq error response: {e.response.text}")
+            logger.error(f"Groq request payload: {payload}")
+            raise
         except Exception as e:
             logger.error(f"Groq content generation failed: {e}")
             raise

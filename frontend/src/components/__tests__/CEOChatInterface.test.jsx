@@ -1,255 +1,325 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import CEOChatInterface from '../CEOChatInterface';
-import * as api from '../../lib/api';
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import CEOChatInterface from "../CEOChatInterface";
+import * as api from "../../lib/api";
+import { toast } from "sonner";
 
 // Mock the API module
-vi.mock('../../lib/api');
+jest.mock("../../lib/api");
+jest.mock("sonner");
 
-// Mock framer-motion
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }) => children,
-}));
+// Mock scrollIntoView since it's not available in jsdom
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-// Mock sonner
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-  },
-}));
-
-describe('CEOChatInterface', () => {
-  const mockOnClose = vi.fn();
-  const mockOnRequirementsFinalized = vi.fn();
+describe("CEOChatInterface - Confirm Button Functionality", () => {
+  const mockOnClose = jest.fn();
+  const mockOnRequirementsFinalized = jest.fn();
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
-  it('renders the chat interface with initial state', () => {
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-      />
-    );
+  describe("Confirm Button Visibility", () => {
+    it("should not show confirm button initially", () => {
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+        />,
+      );
 
-    expect(screen.getByText('CEO Requirements Gathering')).toBeInTheDocument();
-    expect(screen.getByText('CLAUDE-POWERED ASSISTANT')).toBeInTheDocument();
-    expect(screen.getByText("Hi! I'm your CEO assistant.")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Type your response...')).toBeInTheDocument();
-  });
+      expect(
+        screen.queryByText("Confirm and Start Orchestration"),
+      ).not.toBeInTheDocument();
+    });
 
-  it('closes the chat interface when close button is clicked', () => {
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-      />
-    );
+    it("should show confirm button when CEO sends awaiting_confirmation state with polished prompt", async () => {
+      const mockConversationId = "test-conv-123";
+      const mockPolishedPrompt =
+        "Create a web application with user authentication and dashboard";
 
-    const closeButton = screen.getByRole('button', { name: '' });
-    fireEvent.click(closeButton);
+      // Mock API responses
+      api.startCEOChat.mockResolvedValue({
+        conversation_id: mockConversationId,
+        state: "gathering_requirements",
+        message: "Tell me about your project",
+      });
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
+      api.sendCEOChatMessage.mockResolvedValue({
+        state: "awaiting_confirmation",
+        message: "Here is your polished prompt. Please confirm to proceed.",
+        polished_prompt: mockPolishedPrompt,
+      });
 
-  it('starts a conversation when initial message is provided', async () => {
-    const mockResponse = {
-      conversation_id: 'test-conv-123',
-      state: 'gathering_requirements',
-      message: 'Thanks for your request! Let me ask you a few questions...',
-    };
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+          initialMessage="I need a web app"
+        />,
+      );
 
-    api.startCEOChat.mockResolvedValueOnce(mockResponse);
+      // Wait for initial message
+      await waitFor(() => {
+        expect(api.startCEOChat).toHaveBeenCalled();
+      });
 
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-        initialMessage="I want to build a new feature"
-      />
-    );
+      // Send a message to trigger awaiting_confirmation state
+      const input = screen.getByPlaceholderText("Type your response...");
+      fireEvent.change(input, { target: { value: "Yes, with login feature" } });
+      fireEvent.submit(input.closest("form"));
 
-    await waitFor(() => {
-      expect(api.startCEOChat).toHaveBeenCalledWith('I want to build a new feature');
-      expect(screen.getByText('I want to build a new feature')).toBeInTheDocument();
-      expect(screen.getByText(mockResponse.message)).toBeInTheDocument();
+      // Wait for confirm button to appear
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
+      });
+
+      // Verify polished prompt is displayed
+      expect(screen.getByText(mockPolishedPrompt)).toBeInTheDocument();
     });
   });
 
-  it('sends a message when user types and submits', async () => {
-    const mockStartResponse = {
-      conversation_id: 'test-conv-123',
-      state: 'gathering_requirements',
-      message: 'What is your target audience?',
-    };
+  describe("Orchestration Integration", () => {
+    it("should call orchestrateWithPrompt when confirm button is clicked", async () => {
+      const mockConversationId = "test-conv-123";
+      const mockPolishedPrompt =
+        "Create a web application with user authentication";
+      const mockOrchestrationResponse = {
+        plan: {
+          agents: ["frontend", "backend"],
+          tasks: ["Create UI", "Setup auth"],
+        },
+      };
 
-    const mockSendResponse = {
-      state: 'gathering_requirements',
-      message: 'Great! What are the key features you want?',
-    };
+      // Setup mocks
+      api.startCEOChat.mockResolvedValue({
+        conversation_id: mockConversationId,
+        state: "gathering_requirements",
+        message: "Tell me about your project",
+      });
 
-    api.startCEOChat.mockResolvedValueOnce(mockStartResponse);
-    api.sendCEOChatMessage.mockResolvedValueOnce(mockSendResponse);
+      api.sendCEOChatMessage.mockResolvedValue({
+        state: "awaiting_confirmation",
+        message: "Please confirm the polished prompt",
+        polished_prompt: mockPolishedPrompt,
+      });
 
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-      />
-    );
+      api.orchestrateWithPrompt.mockResolvedValue(mockOrchestrationResponse);
 
-    const input = screen.getByPlaceholderText('Type your response...');
-    const sendButton = screen.getByRole('button', { name: '' });
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+          initialMessage="Build a web app"
+        />,
+      );
 
-    // Type and send first message
-    fireEvent.change(input, { target: { value: 'I need a dashboard' } });
-    fireEvent.click(sendButton);
+      // Get to confirmation state
+      await waitFor(() => expect(api.startCEOChat).toHaveBeenCalled());
 
-    await waitFor(() => {
-      expect(api.startCEOChat).toHaveBeenCalledWith('I need a dashboard');
-      expect(screen.getByText('I need a dashboard')).toBeInTheDocument();
-      expect(screen.getByText(mockStartResponse.message)).toBeInTheDocument();
+      const input = screen.getByPlaceholderText("Type your response...");
+      fireEvent.change(input, { target: { value: "With authentication" } });
+      fireEvent.submit(input.closest("form"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
+      });
+
+      // Click confirm button
+      const confirmButton = screen.getByText("Confirm and Start Orchestration");
+      fireEvent.click(confirmButton);
+
+      // Verify orchestration was called with correct prompt
+      await waitFor(() => {
+        expect(api.orchestrateWithPrompt).toHaveBeenCalledWith(
+          mockPolishedPrompt,
+        );
+      });
+
+      // Verify callback was called with results
+      await waitFor(() => {
+        expect(mockOnRequirementsFinalized).toHaveBeenCalledWith(
+          expect.objectContaining({
+            plan: mockOrchestrationResponse.plan,
+            orchestrationResult: mockOrchestrationResponse,
+            polishedPrompt: mockPolishedPrompt,
+          }),
+        );
+      });
     });
 
-    // Type and send second message
-    fireEvent.change(input, { target: { value: 'For developers' } });
-    fireEvent.click(sendButton);
+    it("should show loading state while orchestrating", async () => {
+      const mockPolishedPrompt = "Create app";
 
-    await waitFor(() => {
-      expect(api.sendCEOChatMessage).toHaveBeenCalledWith('test-conv-123', 'For developers');
-      expect(screen.getByText('For developers')).toBeInTheDocument();
-      expect(screen.getByText(mockSendResponse.message)).toBeInTheDocument();
+      // Setup delayed orchestration response
+      api.orchestrateWithPrompt.mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100)),
+      );
+
+      api.startCEOChat.mockResolvedValue({
+        conversation_id: "test-123",
+        state: "gathering_requirements",
+        message: "Tell me more",
+      });
+
+      api.sendCEOChatMessage.mockResolvedValue({
+        state: "awaiting_confirmation",
+        message: "Confirm?",
+        polished_prompt: mockPolishedPrompt,
+      });
+
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+          initialMessage="Build app"
+        />,
+      );
+
+      // Get to confirmation state
+      await waitFor(() => expect(api.startCEOChat).toHaveBeenCalled());
+
+      const input = screen.getByPlaceholderText("Type your response...");
+      fireEvent.change(input, { target: { value: "Yes" } });
+      fireEvent.submit(input.closest("form"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
+      });
+
+      // Click confirm
+      fireEvent.click(screen.getByText("Confirm and Start Orchestration"));
+
+      // Should show loading state
+      await waitFor(() => {
+        expect(screen.getByText("Orchestrating...")).toBeInTheDocument();
+      });
+      expect(screen.getByRole("button")).toBeDisabled();
     });
   });
 
-  it('finalizes requirements when conversation is complete', async () => {
-    const mockStartResponse = {
-      conversation_id: 'test-conv-123',
-      state: 'gathering_requirements',
-      message: 'What do you want to build?',
-    };
+  describe("Error Handling", () => {
+    it("should handle orchestration errors gracefully", async () => {
+      const mockPolishedPrompt = "Create app";
+      const mockError = new Error("Orchestration failed");
 
-    const mockCompleteResponse = {
-      state: 'requirements_complete',
-      message: 'I have all the information I need!',
-      requirements: {
-        purpose: 'Dashboard',
-        target_audience: 'Developers',
-        key_features: ['Analytics', 'Monitoring'],
-      },
-    };
+      // Setup mocks
+      api.orchestrateWithPrompt.mockRejectedValue(mockError);
+      api.startCEOChat.mockResolvedValue({
+        conversation_id: "test-123",
+        state: "gathering_requirements",
+        message: "Tell me more",
+      });
 
-    const mockFinalizeResponse = {
-      requirements: mockCompleteResponse.requirements,
-      plan: {
-        mode: 'multi_agent',
-        steps: [{ agent_id: 'frontend_engineer', instruction: 'Build dashboard' }],
-      },
-    };
+      api.sendCEOChatMessage.mockResolvedValue({
+        state: "awaiting_confirmation",
+        message: "Confirm?",
+        polished_prompt: mockPolishedPrompt,
+      });
 
-    api.startCEOChat.mockResolvedValueOnce(mockStartResponse);
-    api.sendCEOChatMessage.mockResolvedValueOnce(mockCompleteResponse);
-    api.finalizeCEORequirements.mockResolvedValueOnce(mockFinalizeResponse);
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+          initialMessage="Build app"
+        />,
+      );
 
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-      />
-    );
+      // Get to confirmation state
+      await waitFor(() => expect(api.startCEOChat).toHaveBeenCalled());
 
-    const input = screen.getByPlaceholderText('Type your response...');
-    const sendButton = screen.getByRole('button', { name: '' });
+      const input = screen.getByPlaceholderText("Type your response...");
+      fireEvent.change(input, { target: { value: "Yes" } });
+      fireEvent.submit(input.closest("form"));
 
-    // Start conversation
-    fireEvent.change(input, { target: { value: 'Build a dashboard' } });
-    fireEvent.click(sendButton);
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
+      });
 
-    await waitFor(() => {
-      expect(screen.getByText('Build a dashboard')).toBeInTheDocument();
-    });
+      // Click confirm
+      fireEvent.click(screen.getByText("Confirm and Start Orchestration"));
 
-    // Complete requirements
-    fireEvent.change(input, { target: { value: 'For developers with analytics' } });
-    fireEvent.click(sendButton);
+      // Wait for error handling
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(
+          "Failed to orchestrate the request. Please try again.",
+        );
+      });
 
-    await waitFor(() => {
-      expect(api.finalizeCEORequirements).toHaveBeenCalledWith('test-conv-123');
-      expect(mockOnRequirementsFinalized).toHaveBeenCalledWith({
-        requirements: mockFinalizeResponse.requirements,
-        plan: mockFinalizeResponse.plan,
-        conversationId: 'test-conv-123',
+      // Confirm button should be visible again after error
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
       });
     });
   });
 
-  it('displays loading state while processing', async () => {
-    const mockResponse = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          conversation_id: 'test-conv-123',
-          state: 'gathering_requirements',
-          message: 'Processing...',
-        });
-      }, 100);
-    });
+  describe("Message Flow", () => {
+    it("should display appropriate messages during orchestration flow", async () => {
+      const mockPolishedPrompt = "Create a web app";
 
-    api.startCEOChat.mockReturnValueOnce(mockResponse);
+      api.startCEOChat.mockResolvedValue({
+        conversation_id: "test-123",
+        state: "gathering_requirements",
+        message: "Tell me about your project",
+      });
 
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-      />
-    );
+      api.sendCEOChatMessage.mockResolvedValue({
+        state: "awaiting_confirmation",
+        message: "Here is your polished prompt",
+        polished_prompt: mockPolishedPrompt,
+      });
 
-    const input = screen.getByPlaceholderText('Type your response...');
-    const sendButton = screen.getByRole('button', { name: '' });
+      api.orchestrateWithPrompt.mockResolvedValue({
+        plan: { agents: ["frontend"] },
+      });
 
-    fireEvent.change(input, { target: { value: 'Test message' } });
-    fireEvent.click(sendButton);
-
-    // Check for loading indicator
-    await waitFor(() => {
-      const loadingDots = screen.getAllByRole('generic').filter(
-        el => el.className.includes('animate-bounce')
+      render(
+        <CEOChatInterface
+          onClose={mockOnClose}
+          onRequirementsFinalized={mockOnRequirementsFinalized}
+          initialMessage="I need a web app"
+        />,
       );
-      expect(loadingDots).toHaveLength(3);
-    });
-  });
 
-  it('displays requirements summary when available', async () => {
-    const mockResponse = {
-      conversation_id: 'test-conv-123',
-      state: 'requirements_complete',
-      message: 'Requirements gathered!',
-      requirements: {
-        purpose: 'E-commerce platform',
-        target_audience: 'Small businesses',
-        key_features: ['Product catalog', 'Shopping cart', 'Payment'],
-      },
-    };
+      // Wait for initial setup
+      await waitFor(() => expect(api.startCEOChat).toHaveBeenCalled());
 
-    api.startCEOChat.mockResolvedValueOnce(mockResponse);
+      // Send message to trigger confirmation
+      const input = screen.getByPlaceholderText("Type your response...");
+      fireEvent.change(input, { target: { value: "With user auth" } });
+      fireEvent.submit(input.closest("form"));
 
-    render(
-      <CEOChatInterface
-        onClose={mockOnClose}
-        onRequirementsFinalized={mockOnRequirementsFinalized}
-        initialMessage="Build an e-commerce site"
-      />
-    );
+      await waitFor(() => {
+        expect(
+          screen.getByText("Confirm and Start Orchestration"),
+        ).toBeInTheDocument();
+      });
 
-    await waitFor(() => {
-      expect(screen.getByText('Requirements Summary')).toBeInTheDocument();
-      expect(screen.getByText('E-commerce platform')).toBeInTheDocument();
-      expect(screen.getByText('Small businesses')).toBeInTheDocument();
-      expect(screen.getByText('Product catalog, Shopping cart, Payment')).toBeInTheDocument();
+      // Click confirm
+      fireEvent.click(screen.getByText("Confirm and Start Orchestration"));
+
+      // Check for orchestration messages
+      await waitFor(() => {
+        expect(
+          screen.getByText(/I'm now orchestrating your request/),
+        ).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/successfully created a plan/),
+        ).toBeInTheDocument();
+      });
     });
   });
 });

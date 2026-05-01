@@ -13,6 +13,7 @@ from src.core.middleware import APILoggingMiddleware, OrchestrationLoggingMiddle
 # Import routes
 from src.core.health import health_router
 from src.routes.agent_routes import agent_router
+from src.routes.orchestration_routes import orchestration_router
 from src.routes.ceo_orchestration_routes import ceo_router
 from src.agents.ceo.ceo_requirements_gathering import ceo_requirements_router
 from src.routes.ceo_chat_routes import ceo_chat_router
@@ -72,6 +73,7 @@ from src.routes.routes import api_router
 # Include API routes
 app.include_router(health_router)
 app.include_router(api_router)  # This includes the /api/teams endpoint
+app.include_router(orchestration_router)  # Add orchestration routes for /api/orchestrate endpoint
 app.include_router(agent_router)
 app.include_router(ceo_router)
 app.include_router(ceo_requirements_router)

@@ -225,7 +225,15 @@ Success Criteria:
         self.current_state = CEOFlowState.ORCHESTRATING
         self.logger.info(f"[CEO_SIMPLIFIED] Getting orchestration plan for session {session_id}")
         
+        # Validate polished_requirements is not None or empty
+        if not polished_requirements:
+            self.logger.error(f"[CEO_SIMPLIFIED] Polished requirements is None or empty for session {session_id}")
+            raise ValueError("Polished requirements cannot be None or empty")
+        
         try:
+            # Log the task being sent to orchestration
+            self.logger.info(f"[CEO_SIMPLIFIED] Sending task to orchestration: {polished_requirements[:200]}...")
+            
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{self.base_url}/api/orchestrate",

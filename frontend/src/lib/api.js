@@ -151,3 +151,11 @@ export async function finalizeCEORequirements(conversationId) {
     method: "POST",
   });
 }
+
+// NEW: Orchestrate with polished prompt
+export async function orchestrateWithPrompt(polishedPrompt) {
+  return apiCall("/api/orchestrate", {
+    method: "POST",
+    body: JSON.stringify({ task: polishedPrompt }),
+  });
+}

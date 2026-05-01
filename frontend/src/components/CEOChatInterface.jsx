@@ -6,6 +6,7 @@ import {
   sendCEOChatMessage,
   getCEOChatState,
   finalizeCEORequirements,
+  orchestrateWithPrompt,
 } from "../lib/api";
 import { toast } from "sonner";
 
@@ -20,6 +21,8 @@ export default function CEOChatInterface({
   const [conversationId, setConversationId] = useState(null);
   const [conversationState, setConversationState] = useState("initial");
   const [requirements, setRequirements] = useState(null);
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const [polishedPrompt, setPolishedPrompt] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -109,6 +112,21 @@ export default function CEOChatInterface({
           setRequirements(response.requirements);
         }
 
+        // Check if CEO is asking for confirmation of polished prompt
+        if (
+          response.state === "awaiting_confirmation" &&
+          response.polished_prompt
+        ) {
+          setPolishedPrompt(response.polished_prompt);
+          setShowConfirmButton(true);
+        }
+
+        // Also check for requires_confirmation flag
+        if (response.requires_confirmation && response.polished_prompt) {
+          setPolishedPrompt(response.polished_prompt);
+          setShowConfirmButton(true);
+        }
+
         // Check if requirements are complete
         if (response.state === "requirements_complete") {
           setTimeout(() => {
@@ -119,6 +137,55 @@ export default function CEOChatInterface({
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmPrompt = async () => {
+    if (!polishedPrompt) return;
+
+    setIsLoading(true);
+    setShowConfirmButton(false);
+
+    try {
+      // Add confirmation message
+      const confirmMessage = {
+        id: Date.now(),
+        type: "ceo",
+        content:
+          "Great! I'm now orchestrating your request with the polished prompt. Creating a plan and delegating tasks to the appropriate agents...",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, confirmMessage]);
+
+      // Call orchestrate endpoint with polished prompt
+      const response = await orchestrateWithPrompt(polishedPrompt);
+
+      // Add success message
+      const successMessage = {
+        id: Date.now() + 1,
+        type: "ceo",
+        content:
+          "Perfect! I've successfully created a plan and delegated tasks to the agents. They will now start working on your request.",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, successMessage]);
+
+      // Call the callback with orchestration result
+      setTimeout(() => {
+        onRequirementsFinalized({
+          requirements: requirements,
+          plan: response?.plan || response,
+          orchestrationResult: response,
+          conversationId: conversationId,
+          polishedPrompt: polishedPrompt,
+        });
+      }, 1000);
+    } catch (error) {
+      console.error("Error orchestrating with prompt:", error);
+      toast.error("Failed to orchestrate the request. Please try again.");
+      setShowConfirmButton(true); // Show button again on error
     } finally {
       setIsLoading(false);
     }
@@ -296,42 +363,72 @@ export default function CEOChatInterface({
 
           {/* Input Area */}
           <div className="absolute bottom-0 left-0 right-0 px-6 py-4 border-t border-cyan-500/20 bg-[#0B0F19]/80 backdrop-blur-sm">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="flex gap-3"
-            >
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type your response..."
-                disabled={
-                  isLoading || conversationState === "requirements_complete"
-                }
-                className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <button
-                type="submit"
-                disabled={
-                  isLoading ||
-                  !inputValue.trim() ||
-                  conversationState === "requirements_complete"
-                }
-                className="h-11 w-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cyan-400/20"
-                style={{
-                  background: "rgba(0, 240, 255, 0.15)",
-                  border: "1px solid rgba(0, 240, 255, 0.4)",
+            {showConfirmButton ? (
+              <div className="flex flex-col gap-3">
+                <div className="text-sm text-slate-300 bg-slate-800/50 rounded-lg px-4 py-3">
+                  <p className="font-medium text-cyan-300 mb-1">
+                    Polished Prompt Ready:
+                  </p>
+                  <p className="text-xs italic">{polishedPrompt}</p>
+                </div>
+                <button
+                  onClick={handleConfirmPrompt}
+                  disabled={isLoading}
+                  className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-all font-medium text-white hover:bg-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(255, 0, 255, 0.2) 100%)",
+                    border: "1px solid rgba(0, 240, 255, 0.5)",
+                  }}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Orchestrating...
+                    </>
+                  ) : (
+                    <>Confirm and Start Orchestration</>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
                 }}
+                className="flex gap-3"
               >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 text-cyan-300 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4 text-cyan-300" />
-                )}
-              </button>
-            </form>
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Type your response..."
+                  disabled={
+                    isLoading || conversationState === "requirements_complete"
+                  }
+                  className="flex-1 bg-slate-800/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <button
+                  type="submit"
+                  disabled={
+                    isLoading ||
+                    !inputValue.trim() ||
+                    conversationState === "requirements_complete"
+                  }
+                  className="h-11 w-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cyan-400/20"
+                  style={{
+                    background: "rgba(0, 240, 255, 0.15)",
+                    border: "1px solid rgba(0, 240, 255, 0.4)",
+                  }}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 text-cyan-300 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 text-cyan-300" />
+                  )}
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Requirements Summary (if available) */}
